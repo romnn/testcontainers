@@ -76,8 +76,7 @@ func startKafkaContainer(options KafkaContainerOptions) (kafkaC testcontainers.C
 
 	// Create a network
 	if len(req.Networks) < 1 {
-		networkName := fmt.Sprintf("kafka-network-%s", genUUID())
-		// var net testcontainers.Network
+		networkName := fmt.Sprintf("kafka-network-%s", UniqueID())
 		createNetwork := func() error {
 			var err error
 			clientMux.Lock()
