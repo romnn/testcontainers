@@ -22,8 +22,8 @@ before_script:
   - go get github.com/fzipp/gocyclo
   - go get github.com/mitchellh/gox
 script:
-  - invoke pre-commit
   - env GO111MODULE=on go build ${MOD}
+  - invoke pre-commit
   - env GO111MODULE=on go test -v -race -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
 after_success:
   - bash <(curl -s https://codecov.io/bash)
