@@ -5,17 +5,52 @@
 [![GoDoc](https://godoc.org/github.com/romnnn/testcontainers?status.svg)](https://godoc.org/github.com/romnnn/testcontainers)  [![Test Coverage](https://codecov.io/gh/romnnn/testcontainers/branch/master/graph/badge.svg)](https://codecov.io/gh/romnnn/testcontainers)
 [![Release](https://img.shields.io/github/release/romnnn/testcontainers)](https://github.com/romnnn/testcontainers/releases/latest)
 
-Your description goes here...
+A collection of pre-configured [testcontainers](https://github.com/testcontainers/testcontainers-go) for your golang integration tests.
 
+Available containers (feel free to contribute):
+- MongoDB (based on [mongo](https://hub.docker.com/_/mongo))
+- Zookeeper (based on [bitnami/zookeeper](https://hub.docker.com/r/bitnami/zookeeper))
+- Kafka (based on [wurstmeister/kafka](https://hub.docker.com/r/wurstmeister/kafka))
 
-
-#### Usage as a library
+#### Usage
 
 ```golang
-import "github.com/romnnn/testcontainers"
+import (
+	"context"
+	"testing"
+	"time"
+
+	tc "github.com/romnnn/testcontainers"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+// TestDatabaseIntegration tests datababase logic
+func TestDatabaseIntegration(t *testing.T) {
+	// Start the container
+	mongoC, mongoConfig, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	if err != nil {
+		t.Fatalf("Failed to start mongoDB container: %v", err)
+	}
+	defer mongoC.Terminate(context.Background())
+
+	// Connect to the container
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoConfig.ConnectionURI()))
+	if err != nil {
+		t.Fatalf("Failed to create mongo client: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	client.Connect(ctx)
+
+	// TODO: Connect to the database using the URI and implement testDatabaseFunction!
+	if err := testDatabaseFunction(client); err != nil {
+		t.Fatalf("myDatabaseFunction failed with error: %v", err)
+	}
+}
 ```
 
-For more examples, see `examples/`.
+For full examples of all available containers, see `examples/`.
 
 
 #### Development
