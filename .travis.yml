@@ -6,7 +6,6 @@ go:
   - tip
 os:
   - linux
-  - osx
 env: MOD=github.com/romnnn/testcontainers BINARY=testcontainers
 
 jobs:
