@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/prometheus/common/log"
@@ -77,31 +75,15 @@ func startKafkaContainer(options KafkaContainerOptions) (kafkaC testcontainers.C
 	// Create a network
 	if len(req.Networks) < 1 {
 		networkName := fmt.Sprintf("kafka-network-%s", UniqueID())
-		createNetwork := func() error {
-			var err error
-			clientMux.Lock()
-			net, err = testcontainers.GenericNetwork(context.Background(), testcontainers.GenericNetworkRequest{
-				NetworkRequest: testcontainers.NetworkRequest{
-					Driver:         "bridge",
-					Name:           networkName,
-					Attachable:     true,
-					CheckDuplicate: true,
-				},
-			})
-			clientMux.Unlock()
-			return err
-		}
-
-		bo := backoff.NewExponentialBackOff()
-		bo.Multiplier = 1.2
-		bo.InitialInterval = 5 * time.Second
-		bo.MaxElapsedTime = 2 * time.Minute
-		err = backoff.Retry(createNetwork, bo)
+		net, err = CreateNetwork(testcontainers.NetworkRequest{
+			Driver:         "bridge",
+			Name:           networkName,
+			Attachable:     true,
+			CheckDuplicate: true,
+		}, 2)
 		if err != nil {
-			err = fmt.Errorf("Failed to create the docker test network: %v", err)
 			return
 		}
-
 		req.Networks = []string{networkName}
 	}
 
