@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -35,18 +36,18 @@ func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontain
 
 	zookeeperPort, _ := nat.NewPort("", strconv.Itoa(defaultZookeeperPort))
 
-	image := "bitnami/zookeeper"
-	if options.ContainerOptions.Tag != "" {
-		image += fmt.Sprintf(":%s", options.ContainerOptions.Tag)
+	timeout := options.ContainerOptions.StartupTimeout
+	if int64(timeout) < 1 {
+		timeout = 5 * time.Minute // Default timeout
 	}
 
 	// Do not expose any ports per default
 	req := testcontainers.ContainerRequest{
-		Image: image,
+		Image: "bitnami/zookeeper",
 		Env: map[string]string{
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
 		},
-		WaitingFor: wait.ForLog("binding to port"),
+		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
 	}
 
 	mergeRequest(&req, &options.ContainerOptions.ContainerRequest)

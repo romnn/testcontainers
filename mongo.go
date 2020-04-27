@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -49,16 +50,16 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 		env["MONGO_INITDB_ROOT_PASSWORD"] = options.Password
 	}
 
-	image := "mongo"
-	if options.ContainerOptions.Tag != "" {
-		image += fmt.Sprintf(":%s", options.ContainerOptions.Tag)
+	timeout := options.ContainerOptions.StartupTimeout
+	if int64(timeout) < 1 {
+		timeout = 5 * time.Minute // Default timeout
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        image,
+		Image:        "mongo",
 		Env:          env,
 		ExposedPorts: []string{string(mongoPort)},
-		WaitingFor:   wait.ForLog("waiting for connections on port"),
+		WaitingFor:   wait.ForLog("waiting for connections on port").WithStartupTimeout(timeout),
 	}
 
 	mergeRequest(&req, &options.ContainerOptions.ContainerRequest)

@@ -1,12 +1,16 @@
 package testcontainers
 
-import "github.com/testcontainers/testcontainers-go"
+import (
+	"time"
+
+	"github.com/testcontainers/testcontainers-go"
+)
 
 // ContainerOptions ...
 type ContainerOptions struct {
 	testcontainers.ContainerRequest
-	Tag         string
-	CollectLogs bool
+	CollectLogs    bool
+	StartupTimeout time.Duration
 }
 
 // ContainerConfig ...
