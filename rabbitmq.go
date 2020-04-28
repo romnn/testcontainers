@@ -19,8 +19,8 @@ type RabbitmqContainerOptions struct {
 // RabbitmqConfig ...
 type RabbitmqConfig struct {
 	ContainerConfig
-	Host     string
-	Port     int64
+	Host string
+	Port int64
 }
 
 const (
@@ -69,8 +69,8 @@ func StartRabbitmqContainer(options RabbitmqContainerOptions) (rabbitmqC testcon
 	}
 
 	rabbitmqConfig = RabbitmqConfig{
-		Host:     host,
-		Port:     int64(port.Int()),
+		Host: host,
+		Port: int64(port.Int()),
 	}
 
 	if options.CollectLogs {
