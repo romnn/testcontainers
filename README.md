@@ -11,6 +11,8 @@ Available containers (feel free to contribute):
 - MongoDB (based on [mongo](https://hub.docker.com/_/mongo))
 - Zookeeper (based on [bitnami/zookeeper](https://hub.docker.com/r/bitnami/zookeeper))
 - Kafka (based on [wurstmeister/kafka](https://hub.docker.com/r/wurstmeister/kafka))
+- RabbitMQ (based on [rabbitmq](https://hub.docker.com/_/rabbitmq))
+- Redis (based on [redis](https://hub.docker.com/_/redis/))
 
 #### Usage
 
