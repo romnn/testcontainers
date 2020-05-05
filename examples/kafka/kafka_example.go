@@ -6,13 +6,13 @@ import (
 
 	"github.com/Shopify/sarama"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers/kafka"
+	tckafka "github.com/romnnn/testcontainers/kafka"
 	log "github.com/sirupsen/logrus"
 )
 
 func run() string {
 	// Start kafka container
-	kafkaC, kafkaConfig, zkC, network, err := tc.StartKafkaContainer(tc.KafkaContainerOptions{
+	kafkaC, kafkaConfig, zkC, network, err := tckafka.StartKafkaContainer(tckafka.KafkaContainerOptions{
 		ContainerOptions: tc.ContainerOptions{
 			// If you want to customize the container request
 			/*
@@ -41,7 +41,7 @@ func run() string {
 
 	// Prepare the consumer
 	kcCtx, cancel := context.WithCancel(context.Background())
-	kc, wg, err := kafka.ConsumeGroup(kcCtx, kafka.ConsumerOptions{
+	kc, wg, err := tckafka.ConsumeGroup(kcCtx, tckafka.ConsumerOptions{
 		Brokers: kafkaConfig.Brokers,
 		Group:   "TestConsumerGroup",
 		Version: kafkaConfig.KafkaVersion,
@@ -54,7 +54,7 @@ func run() string {
 	// Prepare the producer
 	topic := "my-topic"
 	kpCtx := context.Background()
-	kp, err := kafka.CreateProducer(kpCtx, kafka.ProducerOptions{
+	kp, err := tckafka.CreateProducer(kpCtx, tckafka.ProducerOptions{
 		Brokers: kafkaConfig.Brokers,
 		Group:   "TestConsumerGroup",
 		Version: kafkaConfig.KafkaVersion,

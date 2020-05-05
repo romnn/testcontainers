@@ -13,11 +13,11 @@ import (
 func CreateNetwork(request testcontainers.NetworkRequest, timeoutMin time.Duration) (net testcontainers.Network, err error) {
 	createNetwork := func() error {
 		var err error
-		clientMux.Lock()
+		ClientMux.Lock()
 		net, err = testcontainers.GenericNetwork(context.Background(), testcontainers.GenericNetworkRequest{
 			NetworkRequest: request,
 		})
-		clientMux.Unlock()
+		ClientMux.Unlock()
 		return err
 	}
 

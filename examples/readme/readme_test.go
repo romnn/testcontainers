@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	tc "github.com/romnnn/testcontainers"
+	tcmongo "github.com/romnnn/testcontainers/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -14,7 +14,7 @@ import (
 func TestDatabaseIntegration(t *testing.T) {
 	t.Parallel()
 	// Start the container
-	mongoC, mongoConfig, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	mongoC, mongoConfig, err := tcmongo.StartMongoContainer(tcmongo.MongoContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}

@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 
-	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers/rabbitmq"
+	tcrabbitmq "github.com/romnnn/testcontainers/rabbitmq"
 	log "github.com/sirupsen/logrus"
 )
 
 func run() int {
 	// Start rabbitmq container
-	rabbitmqCont, rabbitmqConf, err := tc.StartRabbitmqContainer(tc.RabbitmqContainerOptions{})
+	rabbitmqCont, rabbitmqConf, err := tcrabbitmq.StartRabbitmqContainer(tcrabbitmq.RabbitmqContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start rabbitMQ container: %v", err)
 	}
@@ -21,7 +20,7 @@ func run() int {
 	exchangeRoutingKey := "0"
 	var queueLength int64 = 100
 
-	options := rabbitmq.Options{
+	options := tcrabbitmq.Options{
 		Host:               rabbitmqConf.Host,
 		Port:               rabbitmqConf.Port,
 		ExchangeName:       exchangeName,
@@ -29,11 +28,11 @@ func run() int {
 	}
 
 	// Setup RabbitMQ
-	rmqConn, rmqCh := rabbitmq.Setup(options)
+	rmqConn, rmqCh := tcrabbitmq.Setup(options)
 	defer rmqConn.Close()
 	defer rmqCh.Close()
 
-	consumerOptions := rabbitmq.ConsumerOptions{
+	consumerOptions := tcrabbitmq.ConsumerOptions{
 		ExchangeName:       exchangeName,
 		QueueName:          queueName,
 		ExchangeRoutingKey: exchangeRoutingKey,
@@ -41,15 +40,15 @@ func run() int {
 	}
 
 	// Setup the RabbitMQConsumer
-	consumerCh := rabbitmq.SetupConsumer(consumerOptions, rmqCh)
+	consumerCh := tcrabbitmq.SetupConsumer(consumerOptions, rmqCh)
 	defer consumerCh.Close()
 
 	// Publish mock data
 	publishCount := 40
 	shortMessage := "short Message"
 	longMessage := "This is a longer message"
-	rabbitmq.Publish(shortMessage, options, rmqCh, publishCount/2)
-	rabbitmq.Publish(longMessage, options, rmqCh, publishCount/2)
+	tcrabbitmq.Publish(shortMessage, options, rmqCh, publishCount/2)
+	tcrabbitmq.Publish(longMessage, options, rmqCh, publishCount/2)
 
 	// Consume queue
 	msgs, err := consumerCh.Consume(

@@ -1,4 +1,4 @@
-package testcontainers
+package rabbitmq
 
 import (
 	"context"
@@ -7,18 +7,19 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
+	tc "github.com/romnnn/testcontainers"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // RabbitmqContainerOptions ...
 type RabbitmqContainerOptions struct {
-	ContainerOptions
+	tc.ContainerOptions
 }
 
 // RabbitmqConfig ...
 type RabbitmqConfig struct {
-	ContainerConfig
+	tc.ContainerConfig
 	Host string
 	Port int64
 }
@@ -43,14 +44,14 @@ func StartRabbitmqContainer(options RabbitmqContainerOptions) (rabbitmqC testcon
 		WaitingFor:   wait.ForLog("Server startup complete").WithStartupTimeout(timeout),
 	}
 
-	mergeRequest(&req, &options.ContainerOptions.ContainerRequest)
+	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	clientMux.Lock()
+	tc.ClientMux.Lock()
 	rabbitmqC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	clientMux.Unlock()
+	tc.ClientMux.Unlock()
 	if err != nil {
 		err = fmt.Errorf("Failed to start rabbitmq container: %v", err)
 		return
@@ -74,8 +75,8 @@ func StartRabbitmqContainer(options RabbitmqContainerOptions) (rabbitmqC testcon
 	}
 
 	if options.CollectLogs {
-		rabbitmqConfig.ContainerConfig.Log = new(LogCollector)
-		go enableLogger(rabbitmqC, rabbitmqConfig.ContainerConfig.Log)
+		rabbitmqConfig.ContainerConfig.Log = new(tc.LogCollector)
+		go tc.EnableLogger(rabbitmqC, rabbitmqConfig.ContainerConfig.Log)
 	}
 	return
 }

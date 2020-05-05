@@ -17,7 +17,8 @@ func (c *LogCollector) Accept(l testcontainers.Log) {
 	c.MessageChan <- string(l.Content)
 }
 
-func enableLogger(container testcontainers.Container, logger *LogCollector) {
+// EnableLogger ...
+func EnableLogger(container testcontainers.Container, logger *LogCollector) {
 	*logger = LogCollector{
 		MessageChan: make(chan string),
 	}

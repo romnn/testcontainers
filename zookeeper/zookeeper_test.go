@@ -1,4 +1,4 @@
-package testcontainers
+package zookeeper
 
 import (
 	"context"
