@@ -1,17 +1,15 @@
-package testcontainers
+package rabbitmq
 
 import (
 	"context"
 	"testing"
-
-	"github.com/romnnn/testcontainers/rabbitmq"
 )
 
 // TestRabbitmqContainer ...
 func TestRabbitmqContainer(t *testing.T) {
 	t.Parallel()
 	// Start rabbitmq container
-	rabbitmqCont, rabbitmqConf, err := StartRabbitmqContainer(RabbitmqContainerOptions{})
+	rabbitmqCont, rabbitmqConf, err := StartRabbitmqContainer(ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start rabbitMQ container: %v", err)
 	}
@@ -22,7 +20,7 @@ func TestRabbitmqContainer(t *testing.T) {
 	exchangeRoutingKey := "0"
 	var queueLength int64 = 100
 
-	options := rabbitmq.Options{
+	options := Options{
 		Host:               rabbitmqConf.Host,
 		Port:               rabbitmqConf.Port,
 		ExchangeName:       exchangeName,
@@ -30,11 +28,11 @@ func TestRabbitmqContainer(t *testing.T) {
 	}
 
 	// Setup RabbitMQ
-	rmqConn, rmqCh := rabbitmq.Setup(options)
+	rmqConn, rmqCh := Setup(options)
 	defer rmqConn.Close()
 	defer rmqCh.Close()
 
-	consumerOptions := rabbitmq.ConsumerOptions{
+	consumerOptions := ConsumerOptions{
 		ExchangeName:       exchangeName,
 		QueueName:          queueName,
 		ExchangeRoutingKey: exchangeRoutingKey,
@@ -42,13 +40,13 @@ func TestRabbitmqContainer(t *testing.T) {
 	}
 
 	// Setup the RabbitMQConsumer
-	consumerCh := rabbitmq.SetupConsumer(consumerOptions, rmqCh)
+	consumerCh := SetupConsumer(consumerOptions, rmqCh)
 	defer consumerCh.Close()
 
 	// Publish mock data
 	publishCount := 15
 	message := ""
-	rabbitmq.Publish(message, options, rmqCh, publishCount)
+	Publish(message, options, rmqCh, publishCount)
 
 	// Consume queue
 	msgs, err := consumerCh.Consume(

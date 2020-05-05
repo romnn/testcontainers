@@ -1,4 +1,4 @@
-package testcontainers
+package mongo
 
 import (
 	"context"
@@ -7,20 +7,21 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
+	tc "github.com/romnnn/testcontainers"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// MongoContainerOptions ...
-type MongoContainerOptions struct {
-	ContainerOptions
+// ContainerOptions ...
+type ContainerOptions struct {
+	tc.ContainerOptions
 	User     string
 	Password string
 }
 
-// MongoDBConfig ...
-type MongoDBConfig struct {
-	ContainerConfig
+// DBConfig ...
+type DBConfig struct {
+	tc.ContainerConfig
 	Host     string
 	Port     uint
 	User     string
@@ -28,7 +29,7 @@ type MongoDBConfig struct {
 }
 
 // ConnectionURI ...
-func (c MongoDBConfig) ConnectionURI() string {
+func (c DBConfig) ConnectionURI() string {
 	var databaseAuth string
 	if c.User != "" && c.Password != "" {
 		databaseAuth = fmt.Sprintf("%s:%s@", c.User, c.Password)
@@ -40,7 +41,7 @@ func (c MongoDBConfig) ConnectionURI() string {
 const defaultMongoDBPort = 27017
 
 // StartMongoContainer ...
-func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.Container, mongoConfig MongoDBConfig, err error) {
+func StartMongoContainer(options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
 	ctx := context.Background()
 	mongoPort, _ := nat.NewPort("", strconv.Itoa(defaultMongoDBPort))
 
@@ -62,14 +63,14 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 		WaitingFor:   wait.ForLog("waiting for connections on port").WithStartupTimeout(timeout),
 	}
 
-	mergeRequest(&req, &options.ContainerOptions.ContainerRequest)
+	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	clientMux.Lock()
+	tc.ClientMux.Lock()
 	mongoC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	clientMux.Unlock()
+	tc.ClientMux.Unlock()
 	if err != nil {
 		err = fmt.Errorf("Failed to start mongo container: %v", err)
 		return
@@ -87,7 +88,7 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 		return
 	}
 
-	mongoConfig = MongoDBConfig{
+	Config = DBConfig{
 		Host:     host,
 		Port:     uint(port.Int()),
 		User:     options.User,
@@ -95,8 +96,8 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 	}
 
 	if options.CollectLogs {
-		mongoConfig.ContainerConfig.Log = new(LogCollector)
-		go enableLogger(mongoC, mongoConfig.ContainerConfig.Log)
+		Config.ContainerConfig.Log = new(tc.LogCollector)
+		go tc.EnableLogger(mongoC, Config.ContainerConfig.Log)
 	}
 	return
 }

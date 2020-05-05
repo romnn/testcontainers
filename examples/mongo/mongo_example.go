@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	tc "github.com/romnnn/testcontainers"
+	tcmongo "github.com/romnnn/testcontainers/mongo"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +14,7 @@ import (
 
 func run() int {
 	// Start mongo container
-	mongoC, mongoConn, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	mongoC, mongoConn, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start mongoDB container: %v", err)
 	}

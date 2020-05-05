@@ -1,4 +1,4 @@
-package testcontainers
+package zookeeper
 
 import (
 	"context"
@@ -7,31 +7,32 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
+	tc "github.com/romnnn/testcontainers"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ZookeeperContainerOptions ...
-type ZookeeperContainerOptions struct {
-	ContainerOptions
+// ContainerOptions ...
+type ContainerOptions struct {
+	tc.ContainerOptions
 }
 
-// ZookeeperConfig ...
-type ZookeeperConfig struct {
-	ContainerConfig
+// Config ...
+type Config struct {
+	tc.ContainerConfig
 	Host string
 	Port uint
-	log  *LogCollector
+	log  *tc.LogCollector
 }
 
-func (zkc ZookeeperConfig) String() string {
+func (zkc Config) String() string {
 	return fmt.Sprintf("%s:%d", zkc.Host, zkc.Port)
 }
 
 const defaultZookeeperPort = 2181
 
 // StartZookeeperContainer ...
-func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontainers.Container, zkConfig *ZookeeperConfig, err error) {
+func StartZookeeperContainer(options ContainerOptions) (zkC testcontainers.Container, zkConfig *Config, err error) {
 	ctx := context.Background()
 
 	zookeeperPort, _ := nat.NewPort("", strconv.Itoa(defaultZookeeperPort))
@@ -50,14 +51,14 @@ func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontain
 		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
 	}
 
-	mergeRequest(&req, &options.ContainerOptions.ContainerRequest)
+	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	clientMux.Lock()
+	tc.ClientMux.Lock()
 	zkC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	clientMux.Unlock()
+	tc.ClientMux.Unlock()
 	if err != nil {
 		return
 	}
@@ -70,14 +71,14 @@ func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontain
 		}
 	}
 
-	zkConfig = &ZookeeperConfig{
+	zkConfig = &Config{
 		Host: "zookeeper",
 		Port: uint(port.Int()),
 	}
 
 	if options.CollectLogs {
-		zkConfig.ContainerConfig.Log = new(LogCollector)
-		go enableLogger(zkC, zkConfig.ContainerConfig.Log)
+		zkConfig.ContainerConfig.Log = new(tc.LogCollector)
+		go tc.EnableLogger(zkC, zkConfig.ContainerConfig.Log)
 	}
 	return
 }

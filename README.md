@@ -11,6 +11,8 @@ Available containers (feel free to contribute):
 - MongoDB (based on [mongo](https://hub.docker.com/_/mongo))
 - Zookeeper (based on [bitnami/zookeeper](https://hub.docker.com/r/bitnami/zookeeper))
 - Kafka (based on [wurstmeister/kafka](https://hub.docker.com/r/wurstmeister/kafka))
+- RabbitMQ (based on [rabbitmq](https://hub.docker.com/_/rabbitmq))
+- Redis (based on [redis](https://hub.docker.com/_/redis/))
 
 #### Usage
 
@@ -28,14 +30,14 @@ import (
 // TestDatabaseIntegration tests datababase logic
 func TestDatabaseIntegration(t *testing.T) {
 	// Start the container
-	mongoC, mongoConfig, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	mongoC, Config, err := tc.StartMongoContainer(tc.ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
 
 	// Connect to the container
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoConfig.ConnectionURI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(Config.ConnectionURI()))
 	if err != nil {
 		t.Fatalf("Failed to create mongo client: %v", err)
 	}

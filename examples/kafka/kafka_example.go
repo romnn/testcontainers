@@ -6,13 +6,13 @@ import (
 
 	"github.com/Shopify/sarama"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers/kafka"
+	tckafka "github.com/romnnn/testcontainers/kafka"
 	log "github.com/sirupsen/logrus"
 )
 
 func run() string {
 	// Start kafka container
-	kafkaC, kafkaConfig, zkC, network, err := tc.StartKafkaContainer(tc.KafkaContainerOptions{
+	kafkaC, Config, zkC, network, err := tckafka.StartKafkaContainer(tckafka.ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{
 			// If you want to customize the container request
 			/*
@@ -33,7 +33,7 @@ func run() string {
 		// If CollectLogs: true
 		go func() {
 			for {
-				msg := <-kafkaConfig.Log.MessageChan
+				msg := <-Config.Log.MessageChan
 				log.Info(msg)
 			}
 		}()
@@ -41,10 +41,10 @@ func run() string {
 
 	// Prepare the consumer
 	kcCtx, cancel := context.WithCancel(context.Background())
-	kc, wg, err := kafka.ConsumeGroup(kcCtx, kafka.ConsumerOptions{
-		Brokers: kafkaConfig.Brokers,
+	kc, wg, err := tckafka.ConsumeGroup(kcCtx, tckafka.ConsumerOptions{
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{"my-topic"},
 	})
 	if err != nil {
@@ -54,10 +54,10 @@ func run() string {
 	// Prepare the producer
 	topic := "my-topic"
 	kpCtx := context.Background()
-	kp, err := kafka.CreateProducer(kpCtx, kafka.ProducerOptions{
-		Brokers: kafkaConfig.Brokers,
+	kp, err := tckafka.CreateProducer(kpCtx, tckafka.ProducerOptions{
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{topic},
 	})
 	if err != nil {

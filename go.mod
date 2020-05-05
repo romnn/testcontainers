@@ -8,6 +8,7 @@ require (
 	github.com/docker/docker v0.7.3-0.20190506211059-b20a14b54661
 	github.com/docker/go-connections v0.4.0
 	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect
+	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.9
 	github.com/prometheus/common v0.9.1

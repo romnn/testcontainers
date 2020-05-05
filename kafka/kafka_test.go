@@ -1,4 +1,4 @@
-package testcontainers
+package kafka
 
 import (
 	"context"
@@ -7,15 +7,15 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/romnnn/testcontainers/kafka"
+	tc "github.com/romnnn/testcontainers"
 )
 
 // TestKafkaContainer ...
 func TestKafkaContainer(t *testing.T) {
 	t.Parallel()
 	// Start kafka container
-	kafkaC, kafkaConfig, zkC, network, err := StartKafkaContainer(KafkaContainerOptions{
-		ContainerOptions: ContainerOptions{},
+	kafkaC, Config, zkC, network, err := StartKafkaContainer(ContainerOptions{
+		ContainerOptions: tc.ContainerOptions{},
 	})
 	if err != nil {
 		t.Fatalf("Failed to start the kafka container: %v", err)
@@ -24,10 +24,10 @@ func TestKafkaContainer(t *testing.T) {
 
 	// Prepare the consumer
 	kcCtx, cancel := context.WithCancel(context.Background())
-	kc, wg, err := kafka.ConsumeGroup(kcCtx, kafka.ConsumerOptions{
-		Brokers: kafkaConfig.Brokers,
+	kc, wg, err := ConsumeGroup(kcCtx, ConsumerOptions{
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{"my-topic"},
 	})
 	if err != nil {
@@ -37,10 +37,10 @@ func TestKafkaContainer(t *testing.T) {
 	// Prepare the producer
 	topic := "my-topic"
 	kpCtx := context.Background()
-	kp, err := kafka.CreateProducer(kpCtx, kafka.ProducerOptions{
-		Brokers: kafkaConfig.Brokers,
+	kp, err := CreateProducer(kpCtx, ProducerOptions{
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{topic},
 	})
 	if err != nil {

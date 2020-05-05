@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	tc "github.com/romnnn/testcontainers"
+	tcmongo "github.com/romnnn/testcontainers/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -14,14 +14,14 @@ import (
 func TestDatabaseIntegration(t *testing.T) {
 	t.Parallel()
 	// Start the container
-	mongoC, mongoConfig, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	mongoC, Config, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
 
 	// Connect to the container
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoConfig.ConnectionURI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(Config.ConnectionURI()))
 	if err != nil {
 		t.Fatalf("Failed to create mongo client: %v", err)
 	}
