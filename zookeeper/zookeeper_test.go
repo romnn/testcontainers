@@ -9,7 +9,7 @@ import (
 func TestZookeeperContainer(t *testing.T) {
 	t.Parallel()
 	// Only test zookeeper container starts without errors, functionality is tested with kafka
-	zkC, _, err := StartZookeeperContainer(ZookeeperContainerOptions{})
+	zkC, _, err := StartZookeeperContainer(ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start Zookeeper container: %v", err)
 	}

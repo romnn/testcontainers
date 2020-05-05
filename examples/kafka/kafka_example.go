@@ -12,7 +12,7 @@ import (
 
 func run() string {
 	// Start kafka container
-	kafkaC, kafkaConfig, zkC, network, err := tckafka.StartKafkaContainer(tckafka.KafkaContainerOptions{
+	kafkaC, Config, zkC, network, err := tckafka.StartKafkaContainer(tckafka.ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{
 			// If you want to customize the container request
 			/*
@@ -33,7 +33,7 @@ func run() string {
 		// If CollectLogs: true
 		go func() {
 			for {
-				msg := <-kafkaConfig.Log.MessageChan
+				msg := <-Config.Log.MessageChan
 				log.Info(msg)
 			}
 		}()
@@ -42,9 +42,9 @@ func run() string {
 	// Prepare the consumer
 	kcCtx, cancel := context.WithCancel(context.Background())
 	kc, wg, err := tckafka.ConsumeGroup(kcCtx, tckafka.ConsumerOptions{
-		Brokers: kafkaConfig.Brokers,
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{"my-topic"},
 	})
 	if err != nil {
@@ -55,9 +55,9 @@ func run() string {
 	topic := "my-topic"
 	kpCtx := context.Background()
 	kp, err := tckafka.CreateProducer(kpCtx, tckafka.ProducerOptions{
-		Brokers: kafkaConfig.Brokers,
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{topic},
 	})
 	if err != nil {

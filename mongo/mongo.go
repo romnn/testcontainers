@@ -12,15 +12,15 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// MongoContainerOptions ...
-type MongoContainerOptions struct {
+// ContainerOptions ...
+type ContainerOptions struct {
 	tc.ContainerOptions
 	User     string
 	Password string
 }
 
-// MongoDBConfig ...
-type MongoDBConfig struct {
+// DBConfig ...
+type DBConfig struct {
 	tc.ContainerConfig
 	Host     string
 	Port     uint
@@ -29,7 +29,7 @@ type MongoDBConfig struct {
 }
 
 // ConnectionURI ...
-func (c MongoDBConfig) ConnectionURI() string {
+func (c DBConfig) ConnectionURI() string {
 	var databaseAuth string
 	if c.User != "" && c.Password != "" {
 		databaseAuth = fmt.Sprintf("%s:%s@", c.User, c.Password)
@@ -41,7 +41,7 @@ func (c MongoDBConfig) ConnectionURI() string {
 const defaultMongoDBPort = 27017
 
 // StartMongoContainer ...
-func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.Container, mongoConfig MongoDBConfig, err error) {
+func StartMongoContainer(options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
 	ctx := context.Background()
 	mongoPort, _ := nat.NewPort("", strconv.Itoa(defaultMongoDBPort))
 
@@ -88,7 +88,7 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 		return
 	}
 
-	mongoConfig = MongoDBConfig{
+	Config = DBConfig{
 		Host:     host,
 		Port:     uint(port.Int()),
 		User:     options.User,
@@ -96,8 +96,8 @@ func StartMongoContainer(options MongoContainerOptions) (mongoC testcontainers.C
 	}
 
 	if options.CollectLogs {
-		mongoConfig.ContainerConfig.Log = new(tc.LogCollector)
-		go tc.EnableLogger(mongoC, mongoConfig.ContainerConfig.Log)
+		Config.ContainerConfig.Log = new(tc.LogCollector)
+		go tc.EnableLogger(mongoC, Config.ContainerConfig.Log)
 	}
 	return
 }

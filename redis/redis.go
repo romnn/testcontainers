@@ -12,14 +12,14 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// RedisContainerOptions ...
-type RedisContainerOptions struct {
+// ContainerOptions ...
+type ContainerOptions struct {
 	tc.ContainerOptions
 	Password string
 }
 
-// RedisConfig ...
-type RedisConfig struct {
+// Config ...
+type Config struct {
 	tc.ContainerConfig
 	Host     string
 	Port     int64
@@ -27,7 +27,7 @@ type RedisConfig struct {
 }
 
 // ConnectionURI ...
-func (c RedisConfig) ConnectionURI() string {
+func (c Config) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
@@ -36,7 +36,7 @@ const (
 )
 
 // StartRedisContainer ...
-func StartRedisContainer(options RedisContainerOptions) (redisC testcontainers.Container, redisConfig RedisConfig, err error) {
+func StartRedisContainer(options ContainerOptions) (redisC testcontainers.Container, redisConfig Config, err error) {
 	ctx := context.Background()
 	redisPort, _ := nat.NewPort("", strconv.Itoa(defaultRedisPort))
 

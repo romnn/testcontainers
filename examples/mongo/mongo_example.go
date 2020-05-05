@@ -14,7 +14,7 @@ import (
 
 func run() int {
 	// Start mongo container
-	mongoC, mongoConn, err := tcmongo.StartMongoContainer(tcmongo.MongoContainerOptions{})
+	mongoC, mongoConn, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start mongoDB container: %v", err)
 	}

@@ -12,7 +12,7 @@ import (
 func TestRabbitmqContainer(t *testing.T) {
 	t.Parallel()
 	// Start redis container
-	redisCont, redisConf, err := StartRedisContainer(RedisContainerOptions{})
+	redisCont, redisConf, err := StartRedisContainer(ContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start redis container: %v", err)
 	}

@@ -14,14 +14,14 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-// KafkaContainerOptions ...
-type KafkaContainerOptions struct {
+// ContainerOptions ...
+type ContainerOptions struct {
 	tc.ContainerOptions
 	StartZookeeper bool
 }
 
-// KafkaContainerConnectionConfig ...
-type KafkaContainerConnectionConfig struct {
+// ContainerConnectionConfig ...
+type ContainerConnectionConfig struct {
 	tc.ContainerConfig
 	Brokers      []string
 	KafkaVersion string
@@ -33,21 +33,21 @@ const (
 )
 
 // StartStandaloneKafkaContainer ...
-func StartStandaloneKafkaContainer(options KafkaContainerOptions) (testcontainers.Container, *KafkaContainerConnectionConfig, error) {
+func StartStandaloneKafkaContainer(options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, error) {
 	options.StartZookeeper = false
-	kafkaC, kafkaConfig, _, _, _, err := startKafkaContainer(options)
-	return kafkaC, kafkaConfig, err
+	kafkaC, Config, _, _, _, err := startKafkaContainer(options)
+	return kafkaC, Config, err
 }
 
 // StartKafkaContainer ...
-func StartKafkaContainer(options KafkaContainerOptions) (testcontainers.Container, *KafkaContainerConnectionConfig, testcontainers.Container, testcontainers.Network, error) {
+func StartKafkaContainer(options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, testcontainers.Container, testcontainers.Network, error) {
 	options.StartZookeeper = true
-	kafkaC, kafkaConfig, zkC, _, net, err := startKafkaContainer(options)
-	return kafkaC, kafkaConfig, zkC, net, err
+	kafkaC, Config, zkC, _, net, err := startKafkaContainer(options)
+	return kafkaC, Config, zkC, net, err
 }
 
 // StartKafkaContainer ...
-func startKafkaContainer(options KafkaContainerOptions) (kafkaC testcontainers.Container, kafkaConfig *KafkaContainerConnectionConfig, zkC testcontainers.Container, zkConfig *tczk.ZookeeperConfig, net testcontainers.Network, err error) {
+func startKafkaContainer(options ContainerOptions) (kafkaC testcontainers.Container, Config *ContainerConnectionConfig, zkC testcontainers.Container, zkConfig *tczk.Config, net testcontainers.Network, err error) {
 	ctx := context.Background()
 
 	kafkaPort, _ := nat.NewPort("", strconv.Itoa(defaultKafkaPort))
@@ -95,7 +95,7 @@ func startKafkaContainer(options KafkaContainerOptions) (kafkaC testcontainers.C
 		for _, net := range req.Networks {
 			aliases[net] = []string{"zookeeper"}
 		}
-		zookeeperOptions := tczk.ZookeeperContainerOptions{
+		zookeeperOptions := tczk.ContainerOptions{
 			ContainerOptions: tc.ContainerOptions{
 				ContainerRequest: testcontainers.ContainerRequest{
 					Networks:       req.Networks,
@@ -165,14 +165,14 @@ func startKafkaContainer(options KafkaContainerOptions) (kafkaC testcontainers.C
 		return
 	}
 
-	kafkaConfig = &KafkaContainerConnectionConfig{
+	Config = &ContainerConnectionConfig{
 		Brokers:      []string{fmt.Sprintf("%s:%d", host, port.Int())},
 		KafkaVersion: "5.5.0",
 	}
 
 	if options.CollectLogs {
-		kafkaConfig.ContainerConfig.Log = new(tc.LogCollector)
-		go tc.EnableLogger(kafkaC, kafkaConfig.ContainerConfig.Log)
+		Config.ContainerConfig.Log = new(tc.LogCollector)
+		go tc.EnableLogger(kafkaC, Config.ContainerConfig.Log)
 	}
 	return
 }

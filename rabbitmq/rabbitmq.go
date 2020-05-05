@@ -12,13 +12,13 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// RabbitmqContainerOptions ...
-type RabbitmqContainerOptions struct {
+// ContainerOptions ...
+type ContainerOptions struct {
 	tc.ContainerOptions
 }
 
-// RabbitmqConfig ...
-type RabbitmqConfig struct {
+// Config ...
+type Config struct {
 	tc.ContainerConfig
 	Host string
 	Port int64
@@ -29,7 +29,7 @@ const (
 )
 
 // StartRabbitmqContainer ...
-func StartRabbitmqContainer(options RabbitmqContainerOptions) (rabbitmqC testcontainers.Container, rabbitmqConfig RabbitmqConfig, err error) {
+func StartRabbitmqContainer(options ContainerOptions) (rabbitmqC testcontainers.Container, rabbitmqConfig Config, err error) {
 	ctx := context.Background()
 	rabbitmqPort, _ := nat.NewPort("", strconv.Itoa(defaultRabbitmqPort))
 
@@ -69,7 +69,7 @@ func StartRabbitmqContainer(options RabbitmqContainerOptions) (rabbitmqC testcon
 		return
 	}
 
-	rabbitmqConfig = RabbitmqConfig{
+	rabbitmqConfig = Config{
 		Host: host,
 		Port: int64(port.Int()),
 	}

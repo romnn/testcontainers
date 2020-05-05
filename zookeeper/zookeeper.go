@@ -12,27 +12,27 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ZookeeperContainerOptions ...
-type ZookeeperContainerOptions struct {
+// ContainerOptions ...
+type ContainerOptions struct {
 	tc.ContainerOptions
 }
 
-// ZookeeperConfig ...
-type ZookeeperConfig struct {
+// Config ...
+type Config struct {
 	tc.ContainerConfig
 	Host string
 	Port uint
 	log  *tc.LogCollector
 }
 
-func (zkc ZookeeperConfig) String() string {
+func (zkc Config) String() string {
 	return fmt.Sprintf("%s:%d", zkc.Host, zkc.Port)
 }
 
 const defaultZookeeperPort = 2181
 
 // StartZookeeperContainer ...
-func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontainers.Container, zkConfig *ZookeeperConfig, err error) {
+func StartZookeeperContainer(options ContainerOptions) (zkC testcontainers.Container, zkConfig *Config, err error) {
 	ctx := context.Background()
 
 	zookeeperPort, _ := nat.NewPort("", strconv.Itoa(defaultZookeeperPort))
@@ -71,7 +71,7 @@ func StartZookeeperContainer(options ZookeeperContainerOptions) (zkC testcontain
 		}
 	}
 
-	zkConfig = &ZookeeperConfig{
+	zkConfig = &Config{
 		Host: "zookeeper",
 		Port: uint(port.Int()),
 	}

@@ -14,7 +14,7 @@ import (
 func TestKafkaContainer(t *testing.T) {
 	t.Parallel()
 	// Start kafka container
-	kafkaC, kafkaConfig, zkC, network, err := StartKafkaContainer(KafkaContainerOptions{
+	kafkaC, Config, zkC, network, err := StartKafkaContainer(ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{},
 	})
 	if err != nil {
@@ -25,9 +25,9 @@ func TestKafkaContainer(t *testing.T) {
 	// Prepare the consumer
 	kcCtx, cancel := context.WithCancel(context.Background())
 	kc, wg, err := ConsumeGroup(kcCtx, ConsumerOptions{
-		Brokers: kafkaConfig.Brokers,
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{"my-topic"},
 	})
 	if err != nil {
@@ -38,9 +38,9 @@ func TestKafkaContainer(t *testing.T) {
 	topic := "my-topic"
 	kpCtx := context.Background()
 	kp, err := CreateProducer(kpCtx, ProducerOptions{
-		Brokers: kafkaConfig.Brokers,
+		Brokers: Config.Brokers,
 		Group:   "TestConsumerGroup",
-		Version: kafkaConfig.KafkaVersion,
+		Version: Config.KafkaVersion,
 		Topics:  []string{topic},
 	})
 	if err != nil {

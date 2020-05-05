@@ -14,14 +14,14 @@ import (
 func TestDatabaseIntegration(t *testing.T) {
 	t.Parallel()
 	// Start the container
-	mongoC, mongoConfig, err := tcmongo.StartMongoContainer(tcmongo.MongoContainerOptions{})
+	mongoC, Config, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
 
 	// Connect to the container
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoConfig.ConnectionURI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(Config.ConnectionURI()))
 	if err != nil {
 		t.Fatalf("Failed to create mongo client: %v", err)
 	}

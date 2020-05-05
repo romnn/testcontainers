@@ -30,14 +30,14 @@ import (
 // TestDatabaseIntegration tests datababase logic
 func TestDatabaseIntegration(t *testing.T) {
 	// Start the container
-	mongoC, mongoConfig, err := tc.StartMongoContainer(tc.MongoContainerOptions{})
+	mongoC, Config, err := tc.StartMongoContainer(tc.ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
 
 	// Connect to the container
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoConfig.ConnectionURI()))
+	client, err := mongo.NewClient(options.Client().ApplyURI(Config.ConnectionURI()))
 	if err != nil {
 		t.Fatalf("Failed to create mongo client: %v", err)
 	}
