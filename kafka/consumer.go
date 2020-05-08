@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	maxRetries       = 10
+	maxRetries       = 20
 	retryIntervalSec = 5
 )
 
