@@ -49,6 +49,10 @@ func StartZookeeperContainer(options ContainerOptions) (zkC testcontainers.Conta
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
 		},
 		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
+		Resources: &testcontainers.ContainerResourcers{
+			Memory:     50 * 1024 * 1024, // max. 50MB
+			MemorySwap: -1,               // Unlimited swap
+		},
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
