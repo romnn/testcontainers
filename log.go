@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/prometheus/common/log"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/romnnn/testcontainers-go"
 )
 
 // LogCollector ...

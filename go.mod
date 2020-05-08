@@ -12,9 +12,9 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.9
 	github.com/prometheus/common v0.9.1
+	github.com/romnnn/testcontainers-go v0.5.2
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
-	github.com/testcontainers/testcontainers-go v0.5.1
 	go.mongodb.org/mongo-driver v1.3.2
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/tools v0.0.0-20200427214658-4697a2867c88 // indirect

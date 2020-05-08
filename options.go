@@ -3,7 +3,7 @@ package testcontainers
 import (
 	"time"
 
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/romnnn/testcontainers-go"
 )
 
 // ContainerOptions ...
