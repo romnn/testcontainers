@@ -42,10 +42,12 @@ func StartRabbitmqContainer(options ContainerOptions) (rabbitmqC testcontainers.
 		Image:        "rabbitmq:3.8.1-management",
 		ExposedPorts: []string{string(rabbitmqPort)},
 		WaitingFor:   wait.ForLog("Server startup complete").WithStartupTimeout(timeout),
-		Resources: &testcontainers.ContainerResourcers{
-			Memory:     50 * 1024 * 1024, // max. 50MB
-			MemorySwap: -1,               // Unlimited swap
-		},
+		/*
+			Resources: &testcontainers.ContainerResourcers{
+				Memory:     50 * 1024 * 1024, // max. 50MB
+				MemorySwap: -1,               // Unlimited swap
+			},
+		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

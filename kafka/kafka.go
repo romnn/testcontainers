@@ -70,10 +70,12 @@ func startKafkaContainer(options ContainerOptions) (kafkaC testcontainers.Contai
 		BindMounts: map[string]string{
 			"/var/run/docker.sock": "/var/run/docker.sock",
 		},
-		Resources: &testcontainers.ContainerResourcers{
-			Memory:     150 * 1024 * 1024, // max. 150MB
-			MemorySwap: -1,                // Unlimited swap
-		},
+		/*
+			Resources: &testcontainers.ContainerResourcers{
+				Memory:     150 * 1024 * 1024, // max. 150MB
+				MemorySwap: -1,                // Unlimited swap
+			},
+		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

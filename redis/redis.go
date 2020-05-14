@@ -49,10 +49,12 @@ func StartRedisContainer(options ContainerOptions) (redisC testcontainers.Contai
 		Image:        "redis:6.0.1",
 		ExposedPorts: []string{string(redisPort)},
 		WaitingFor:   wait.ForLog("Ready to accept connections").WithStartupTimeout(timeout),
-		Resources: &testcontainers.ContainerResourcers{
-			Memory:     50 * 1024 * 1024, // max. 50MB
-			MemorySwap: -1,               // Unlimited swap
-		},
+		/*
+			Resources: &testcontainers.ContainerResourcers{
+				Memory:     50 * 1024 * 1024, // max. 50MB
+				MemorySwap: -1,               // Unlimited swap
+			},
+		*/
 	}
 
 	if options.Password != "" {
