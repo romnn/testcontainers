@@ -20,20 +20,22 @@ func run() int {
 	mongoC, mongoCfg, err := tcmongo.StartMongoContainer(context.Background(), tcmongo.ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{CollectLogs: true},
 	})
-	var containerLog string
-	go func() {
-		for {
-			msg := <-mongoCfg.Log.MessageChan
-			containerLog = containerLog + msg
-		}
-	}()
-	log.Infof("Collecting container logs for the next 15 seconds")
-	time.Sleep(15 * time.Second)
-	defer fmt.Println(containerLog)
 	if err != nil {
 		log.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
+	var containerLog string
+	if mongoCfg.Log != nil {
+		go func() {
+			for {
+				msg := <-mongoCfg.Log.MessageChan
+				containerLog = containerLog + msg
+			}
+		}()
+		log.Infof("Collecting container logs for the next 15 seconds")
+		time.Sleep(15 * time.Second)
+		defer fmt.Println(containerLog)
+	}
 
 	// Connect to the database
 	mongoURI := mongoCfg.ConnectionURI()
