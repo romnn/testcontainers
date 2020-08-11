@@ -11,6 +11,7 @@ import (
 )
 
 func run() string {
+	log.SetLevel(log.InfoLevel)
 	// Start kafka container
 	kafkaC, Config, zkC, network, err := tckafka.StartKafkaContainer(context.Background(), tckafka.ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{

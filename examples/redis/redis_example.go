@@ -9,6 +9,7 @@ import (
 )
 
 func run() string {
+	log.SetLevel(log.InfoLevel)
 	// Start redis container
 	redisCont, redisConf, err := tcredis.StartRedisContainer(context.Background(), tcredis.ContainerOptions{})
 	if err != nil {

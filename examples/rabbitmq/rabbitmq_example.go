@@ -8,6 +8,7 @@ import (
 )
 
 func run() int {
+	log.SetLevel(log.InfoLevel)
 	// Start rabbitmq container
 	rabbitmqCont, rabbitmqConf, err := tcrabbitmq.StartRabbitmqContainer(context.Background(), tcrabbitmq.ContainerOptions{})
 	if err != nil {

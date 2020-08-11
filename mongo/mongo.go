@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -101,7 +102,10 @@ func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC 
 	}
 
 	if options.CollectLogs {
-		Config.ContainerConfig.Log = new(tc.LogCollector)
+		Config.ContainerConfig.Log = &tc.LogCollector{
+			MessageChan: make(chan string),
+			Mux:         sync.Mutex{},
+		}
 		go tc.EnableLogger(mongoC, Config.ContainerConfig.Log)
 	}
 	return
