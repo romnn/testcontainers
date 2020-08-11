@@ -9,7 +9,11 @@ require (
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/docker/go-connections v0.4.0
+<<<<<<< HEAD
 	github.com/go-redis/redis v6.15.9+incompatible
+=======
+	github.com/go-redis/redis v6.15.7+incompatible
+>>>>>>> 85583980847097fc061f16c443b538332d967410
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/imdario/mergo v0.3.9
@@ -19,7 +23,12 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 	go.mongodb.org/mongo-driver v1.3.2
+<<<<<<< HEAD
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
+=======
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
+>>>>>>> 85583980847097fc061f16c443b538332d967410
 )
