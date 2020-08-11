@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["mongo.go"],
+    importpath = "github.com/romnnn/testcontainers/mongo",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:go_default_library",
+        "@com_github_docker_go_connections//nat:go_default_library",
+        "@com_github_romnnn_testcontainers_go//:go_default_library",
+        "@com_github_romnnn_testcontainers_go//wait:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["mongo_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "@org_mongodb_go_mongo_driver//bson:go_default_library",
+        "@org_mongodb_go_mongo_driver//mongo:go_default_library",
+        "@org_mongodb_go_mongo_driver//mongo/options:go_default_library",
+        "@org_mongodb_go_mongo_driver//mongo/readpref:go_default_library",
+    ],
+)

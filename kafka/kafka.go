@@ -33,23 +33,21 @@ const (
 )
 
 // StartStandaloneKafkaContainer ...
-func StartStandaloneKafkaContainer(options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, error) {
+func StartStandaloneKafkaContainer(ctx context.Context, options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, error) {
 	options.StartZookeeper = false
-	kafkaC, Config, _, _, _, err := startKafkaContainer(options)
+	kafkaC, Config, _, _, _, err := startKafkaContainer(ctx, options)
 	return kafkaC, Config, err
 }
 
 // StartKafkaContainer ...
-func StartKafkaContainer(options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, testcontainers.Container, testcontainers.Network, error) {
+func StartKafkaContainer(ctx context.Context, options ContainerOptions) (testcontainers.Container, *ContainerConnectionConfig, testcontainers.Container, testcontainers.Network, error) {
 	options.StartZookeeper = true
-	kafkaC, Config, zkC, _, net, err := startKafkaContainer(options)
+	kafkaC, Config, zkC, _, net, err := startKafkaContainer(ctx, options)
 	return kafkaC, Config, zkC, net, err
 }
 
 // StartKafkaContainer ...
-func startKafkaContainer(options ContainerOptions) (kafkaC testcontainers.Container, Config *ContainerConnectionConfig, zkC testcontainers.Container, zkConfig *tczk.Config, net testcontainers.Network, err error) {
-	ctx := context.Background()
-
+func startKafkaContainer(ctx context.Context, options ContainerOptions) (kafkaC testcontainers.Container, Config *ContainerConnectionConfig, zkC testcontainers.Container, zkConfig *tczk.Config, net testcontainers.Network, err error) {
 	kafkaPort, _ := nat.NewPort("", strconv.Itoa(defaultKafkaPort))
 
 	req := testcontainers.ContainerRequest{
@@ -110,7 +108,7 @@ func startKafkaContainer(options ContainerOptions) (kafkaC testcontainers.Contai
 				CollectLogs: options.ContainerOptions.CollectLogs,
 			},
 		}
-		zkC, zkConfig, err = tczk.StartZookeeperContainer(zookeeperOptions)
+		zkC, zkConfig, err = tczk.StartZookeeperContainer(ctx, zookeeperOptions)
 		if err != nil {
 			err = fmt.Errorf("Failed to start zookeeper container: %v", err)
 			return

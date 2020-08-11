@@ -32,9 +32,7 @@ func (zkc Config) String() string {
 const defaultZookeeperPort = 2181
 
 // StartZookeeperContainer ...
-func StartZookeeperContainer(options ContainerOptions) (zkC testcontainers.Container, zkConfig *Config, err error) {
-	ctx := context.Background()
-
+func StartZookeeperContainer(ctx context.Context, options ContainerOptions) (zkC testcontainers.Container, zkConfig *Config, err error) {
 	zookeeperPort, _ := nat.NewPort("", strconv.Itoa(defaultZookeeperPort))
 
 	timeout := options.ContainerOptions.StartupTimeout

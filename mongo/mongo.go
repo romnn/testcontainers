@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -41,8 +42,7 @@ func (c DBConfig) ConnectionURI() string {
 const defaultMongoDBPort = 27017
 
 // StartMongoContainer ...
-func StartMongoContainer(options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
-	ctx := context.Background()
+func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
 	mongoPort, _ := nat.NewPort("", strconv.Itoa(defaultMongoDBPort))
 
 	var env map[string]string
@@ -102,7 +102,10 @@ func StartMongoContainer(options ContainerOptions) (mongoC testcontainers.Contai
 	}
 
 	if options.CollectLogs {
-		Config.ContainerConfig.Log = new(tc.LogCollector)
+		Config.ContainerConfig.Log = &tc.LogCollector{
+			MessageChan: make(chan string),
+			Mux:         sync.Mutex{},
+		}
 		go tc.EnableLogger(mongoC, Config.ContainerConfig.Log)
 	}
 	return

@@ -9,7 +9,7 @@ import (
 func TestRabbitmqContainer(t *testing.T) {
 	t.Parallel()
 	// Start rabbitmq container
-	rabbitmqCont, rabbitmqConf, err := StartRabbitmqContainer(ContainerOptions{})
+	rabbitmqCont, rabbitmqConf, err := StartRabbitmqContainer(context.Background(), ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start rabbitMQ container: %v", err)
 	}

@@ -36,8 +36,7 @@ const (
 )
 
 // StartRedisContainer ...
-func StartRedisContainer(options ContainerOptions) (redisC testcontainers.Container, redisConfig Config, err error) {
-	ctx := context.Background()
+func StartRedisContainer(ctx context.Context, options ContainerOptions) (redisC testcontainers.Container, redisConfig Config, err error) {
 	redisPort, _ := nat.NewPort("", strconv.Itoa(defaultRedisPort))
 
 	timeout := options.ContainerOptions.StartupTimeout

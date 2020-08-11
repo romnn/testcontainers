@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	tc "github.com/romnnn/testcontainers"
 	tcmongo "github.com/romnnn/testcontainers/mongo"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,15 +15,30 @@ import (
 )
 
 func run() int {
+	log.SetLevel(log.InfoLevel)
 	// Start mongo container
-	mongoC, mongoConn, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
+	mongoC, mongoCfg, err := tcmongo.StartMongoContainer(context.Background(), tcmongo.ContainerOptions{
+		ContainerOptions: tc.ContainerOptions{CollectLogs: true},
+	})
 	if err != nil {
 		log.Fatalf("Failed to start mongoDB container: %v", err)
 	}
 	defer mongoC.Terminate(context.Background())
+	var containerLog string
+	if mongoCfg.Log != nil {
+		go func() {
+			for {
+				msg := <-mongoCfg.Log.MessageChan
+				containerLog = containerLog + msg
+			}
+		}()
+		log.Infof("Collecting container logs for the next 15 seconds")
+		time.Sleep(15 * time.Second)
+		defer fmt.Println(containerLog)
+	}
 
 	// Connect to the database
-	mongoURI := mongoConn.ConnectionURI()
+	mongoURI := mongoCfg.ConnectionURI()
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatalf("Failed to create mongo client (%s): %v", mongoURI, err)

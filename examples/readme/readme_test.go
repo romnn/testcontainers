@@ -14,7 +14,7 @@ import (
 func TestDatabaseIntegration(t *testing.T) {
 	t.Parallel()
 	// Start the container
-	mongoC, Config, err := tcmongo.StartMongoContainer(tcmongo.ContainerOptions{})
+	mongoC, Config, err := tcmongo.StartMongoContainer(context.Background(), tcmongo.ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}

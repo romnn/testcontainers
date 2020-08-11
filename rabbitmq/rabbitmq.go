@@ -29,8 +29,7 @@ const (
 )
 
 // StartRabbitmqContainer ...
-func StartRabbitmqContainer(options ContainerOptions) (rabbitmqC testcontainers.Container, rabbitmqConfig Config, err error) {
-	ctx := context.Background()
+func StartRabbitmqContainer(ctx context.Context, options ContainerOptions) (rabbitmqC testcontainers.Container, rabbitmqConfig Config, err error) {
 	rabbitmqPort, _ := nat.NewPort("", strconv.Itoa(defaultRabbitmqPort))
 
 	timeout := options.ContainerOptions.StartupTimeout

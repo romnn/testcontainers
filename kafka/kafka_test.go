@@ -14,7 +14,7 @@ import (
 func TestKafkaContainer(t *testing.T) {
 	t.Parallel()
 	// Start kafka container
-	kafkaC, Config, zkC, network, err := StartKafkaContainer(ContainerOptions{
+	kafkaC, Config, zkC, network, err := StartKafkaContainer(context.Background(), ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{},
 	})
 	if err != nil {
