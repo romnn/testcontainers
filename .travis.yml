@@ -24,6 +24,7 @@ before_script:
 script:
   - env GO111MODULE=on go build ${MOD}
   - invoke pre-commit
+  - git diff --staged
   - env GO111MODULE=on go test -v -race -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
 after_success:
   - bash <(curl -s https://codecov.io/bash)
