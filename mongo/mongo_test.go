@@ -15,7 +15,7 @@ import (
 func TestMongoContainer(t *testing.T) {
 	t.Parallel()
 	// Start mongo container
-	mongoC, mongoConn, err := StartMongoContainer(ContainerOptions{})
+	mongoC, mongoConn, err := StartMongoContainer(context.Background(), ContainerOptions{})
 	if err != nil {
 		t.Fatalf("Failed to start mongoDB container: %v", err)
 	}

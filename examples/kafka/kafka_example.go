@@ -12,7 +12,7 @@ import (
 
 func run() string {
 	// Start kafka container
-	kafkaC, Config, zkC, network, err := tckafka.StartKafkaContainer(tckafka.ContainerOptions{
+	kafkaC, Config, zkC, network, err := tckafka.StartKafkaContainer(context.Background(), tckafka.ContainerOptions{
 		ContainerOptions: tc.ContainerOptions{
 			// If you want to customize the container request
 			/*

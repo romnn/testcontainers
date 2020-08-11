@@ -10,7 +10,7 @@ import (
 
 func run() string {
 	// Start redis container
-	redisCont, redisConf, err := tcredis.StartRedisContainer(tcredis.ContainerOptions{})
+	redisCont, redisConf, err := tcredis.StartRedisContainer(context.Background(), tcredis.ContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start redis container: %v", err)
 	}

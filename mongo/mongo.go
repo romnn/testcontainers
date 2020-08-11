@@ -41,8 +41,7 @@ func (c DBConfig) ConnectionURI() string {
 const defaultMongoDBPort = 27017
 
 // StartMongoContainer ...
-func StartMongoContainer(options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
-	ctx := context.Background()
+func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
 	mongoPort, _ := nat.NewPort("", strconv.Itoa(defaultMongoDBPort))
 
 	var env map[string]string
