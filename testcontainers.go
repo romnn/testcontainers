@@ -3,7 +3,7 @@ package testcontainers
 import "sync"
 
 // Version is incremented using bump2version
-const Version = "0.1.10"
+const Version = "0.1.11"
 
 // ClientMux ...
 var ClientMux sync.Mutex
