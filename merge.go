@@ -11,3 +11,10 @@ func MergeRequest(c *testcontainers.ContainerRequest, override *testcontainers.C
 		panic(err)
 	}
 }
+
+// MergeOptions can merge generic options
+func MergeOptions(c interface{}, override interface{}) {
+	if err := mergo.Merge(c, override, mergo.WithOverride); err != nil {
+		panic(err)
+	}
+}
