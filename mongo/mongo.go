@@ -13,6 +13,8 @@ import (
 	"github.com/romnnn/testcontainers-go/wait"
 )
 
+var mongoMux = new(sync.Mutex)
+
 // ContainerOptions ...
 type ContainerOptions struct {
 	tc.ContainerOptions
@@ -43,9 +45,11 @@ const defaultMongoDBPort = 27017
 
 // StartMongoContainer ...
 func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC testcontainers.Container, Config DBConfig, err error) {
+	mongoMux.Lock()
+	defer mongoMux.Unlock()
 	mongoPort, _ := nat.NewPort("", strconv.Itoa(defaultMongoDBPort))
 
-	var env map[string]string
+	env := make(map[string]string)
 	if options.User != "" && options.Password != "" {
 		env["MONGO_INITDB_ROOT_USERNAME"] = options.User
 		env["MONGO_INITDB_ROOT_PASSWORD"] = options.Password

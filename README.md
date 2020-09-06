@@ -13,6 +13,7 @@ Available containers (feel free to contribute):
 - Kafka (based on [wurstmeister/kafka](https://hub.docker.com/r/wurstmeister/kafka))
 - RabbitMQ (based on [rabbitmq](https://hub.docker.com/_/rabbitmq))
 - Redis (based on [redis](https://hub.docker.com/_/redis/))
+- Minio (based on [minio/minio](https://hub.docker.com/r/minio/minio))
 
 #### Usage
 
