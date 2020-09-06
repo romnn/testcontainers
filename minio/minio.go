@@ -16,8 +16,8 @@ import (
 // ContainerOptions ...
 type ContainerOptions struct {
 	tc.ContainerOptions
-	AccessKeyID         string
-	SecretAccessKey     string
+	AccessKeyID     string
+	SecretAccessKey string
 }
 
 // Config ...
@@ -25,8 +25,8 @@ type Config struct {
 	tc.ContainerConfig
 	Host            string
 	Port            uint
-	AccessKeyID         string
-	SecretAccessKey     string
+	AccessKeyID     string
+	SecretAccessKey string
 }
 
 // ConnectionURI ...
@@ -45,7 +45,7 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 		env["MINIO_ACCESS_KEY"] = options.AccessKeyID
 		env["MINIO_SECRET_KEY"] = options.SecretAccessKey
 	}
-	
+
 	timeout := options.ContainerOptions.StartupTimeout
 	if int64(timeout) < 1 {
 		timeout = 5 * time.Minute // Default timeout
@@ -54,7 +54,7 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 	req := testcontainers.ContainerRequest{
 		Image:        "minio/minio",
 		Env:          env,
-		Cmd: []string{"server", "/data"},
+		Cmd:          []string{"server", "/data"},
 		ExposedPorts: []string{string(minioPort)},
 		WaitingFor:   wait.ForLog("Object API (Amazon S3 compatible)").WithStartupTimeout(timeout),
 		/*
@@ -91,10 +91,10 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 	}
 
 	config = Config{
-		Host:     host,
-		Port:     uint(port.Int()),
-		AccessKeyID:        options.AccessKeyID,
-	SecretAccessKey:     options.SecretAccessKey,
+		Host:            host,
+		Port:            uint(port.Int()),
+		AccessKeyID:     options.AccessKeyID,
+		SecretAccessKey: options.SecretAccessKey,
 	}
 
 	if options.CollectLogs {

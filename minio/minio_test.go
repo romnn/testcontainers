@@ -1,10 +1,10 @@
 package minio
 
 import (
-	"context"
-	"testing"
 	"bytes"
+	"context"
 	"io/ioutil"
+	"testing"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -15,7 +15,7 @@ func TestMinioContainer(t *testing.T) {
 	t.Parallel()
 	// Start minio container
 	minioC, minioCfg, err := StartMinioContainer(context.Background(), ContainerOptions{
-		AccessKeyID: "3846587325",
+		AccessKeyID:     "3846587325",
 		SecretAccessKey: "te782tcb7tr3va7brkwev7awst",
 	})
 	if err != nil {

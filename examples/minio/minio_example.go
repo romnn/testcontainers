@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"io/ioutil"
 
-	tcminio "github.com/romnnn/testcontainers/minio"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	tcminio "github.com/romnnn/testcontainers/minio"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +15,7 @@ func run() string {
 	log.SetLevel(log.InfoLevel)
 	// Start minio container
 	minioC, minioCfg, err := tcminio.StartMinioContainer(context.Background(), tcminio.ContainerOptions{
-		AccessKeyID: "3846587325",
+		AccessKeyID:     "3846587325",
 		SecretAccessKey: "te782tcb7tr3va7brkwev7awst",
 	})
 	if err != nil {
