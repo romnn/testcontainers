@@ -8,8 +8,8 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
-	"github.com/romnnn/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // ContainerOptions ...
@@ -42,17 +42,11 @@ func StartZookeeperContainer(ctx context.Context, options ContainerOptions) (zkC
 
 	// Do not expose any ports per default
 	req := testcontainers.ContainerRequest{
-		Image: "bitnami/zookeeper",
+    Image: "bitnami/zookeeper:3.6.2",
 		Env: map[string]string{
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
 		},
 		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     50 * 1024 * 1024, // max. 50MB
-				MemorySwap: -1,               // Unlimited swap
-			},
-		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

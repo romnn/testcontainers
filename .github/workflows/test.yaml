@@ -1,0 +1,34 @@
+on: [push, pull_request]
+
+name: test
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.13.x, 1.14.x, 1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: install code check tools
+      run: |
+        go get -u golang.org/x/lint/golint
+        go get -u github.com/fzipp/gocyclo
+        go get -u github.com/mitchellh/gox
+        # do not change go.mod and go.sum
+        git checkout go.mod go.sum
+    
+    - name: code checks
+      uses: pre-commit/action@v2.0.0
+      with:
+        extra_args: --all-files
+
+    - name: test
+      run: |
+        go test -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
+        bash <(curl -s https://codecov.io/bash)

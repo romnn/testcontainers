@@ -2,7 +2,7 @@ package testcontainers
 
 import (
 	"github.com/imdario/mergo"
-	"github.com/romnnn/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 // MergeRequest ...

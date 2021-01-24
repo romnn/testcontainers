@@ -9,8 +9,8 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
-	"github.com/romnnn/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // ContainerOptions ...
@@ -52,17 +52,11 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "minio/minio",
+    Image:        "minio/minio:RELEASE.2021-01-16T02-19-44Z",
 		Env:          env,
 		Cmd:          []string{"server", "/data"},
 		ExposedPorts: []string{string(minioPort)},
 		WaitingFor:   wait.ForLog("Object API (Amazon S3 compatible)").WithStartupTimeout(timeout),
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     50 * 1024 * 1024, // max. 50MB
-				MemorySwap: -1,               // Unlimited swap
-			},
-		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

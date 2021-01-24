@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/romnnn/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 // CreateNetwork creates a docker container network

@@ -10,7 +10,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/prometheus/common/log"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go"
 	tczk "github.com/romnnn/testcontainers/zookeeper"
 )
 
@@ -51,7 +51,7 @@ func startKafkaContainer(ctx context.Context, options ContainerOptions) (kafkaC 
 	kafkaPort, _ := nat.NewPort("", strconv.Itoa(defaultKafkaPort))
 
 	req := testcontainers.ContainerRequest{
-		Image: "confluentinc/cp-kafka:5.5.0",
+		Image: "confluentinc/cp-kafka:5.5.3",
 		Cmd:   []string{"/bin/bash", "-c", fmt.Sprintf("while [ ! -f %s ]; do sleep 0.1; done; cat %s && %s", startScript, startScript, startScript)},
 		Env: map[string]string{
 			"KAFKA_LISTENERS":                        fmt.Sprintf("PLAINTEXT://0.0.0.0:%d,BROKER://0.0.0.0:9092", kafkaPort.Int()),
@@ -68,12 +68,6 @@ func startKafkaContainer(ctx context.Context, options ContainerOptions) (kafkaC 
 		BindMounts: map[string]string{
 			"/var/run/docker.sock": "/var/run/docker.sock",
 		},
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     150 * 1024 * 1024, // max. 150MB
-				MemorySwap: -1,                // Unlimited swap
-			},
-		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

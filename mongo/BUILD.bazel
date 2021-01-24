@@ -8,8 +8,8 @@ go_library(
     deps = [
         "//:go_default_library",
         "@com_github_docker_go_connections//nat:go_default_library",
-        "@com_github_romnnn_testcontainers_go//:go_default_library",
-        "@com_github_romnnn_testcontainers_go//wait:go_default_library",
+        "@com_github_testcontainers_testcontainers_go//:go_default_library",
+        "@com_github_testcontainers_testcontainers_go//wait:go_default_library",
     ],
 )
 

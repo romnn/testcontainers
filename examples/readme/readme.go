@@ -7,16 +7,26 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+  tc "github.com/romnnn/testcontainers/mongo"
 )
 
 func testDatabaseFunction(mongoClient *mongo.Client) error {
-	// Implement a real function here
+  _ = mongoClient.Database("testdatabase").Collection("my-collection")
+	log.Println("Implement a real function here")
 	return nil
 }
 
 func main() {
+  // Start mongo container
+	mongoC, mongoConn, err := tc.StartMongoContainer(context.Background(), tc.ContainerOptions{})
+	if err != nil {
+		log.Fatalf("Failed to start mongoDB container: %v", err)
+	}
+	defer mongoC.Terminate(context.Background())
+
 	// Connect to the container
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/?connect=direct"))
+	mongoURI := mongoConn.ConnectionURI()
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatalf("Failed to create mongo client: %v", err)
 	}

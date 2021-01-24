@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/romnnn/testcontainers/examples/readme",
     visibility = ["//visibility:private"],
     deps = [
+        "//mongo:go_default_library",
         "@org_mongodb_go_mongo_driver//mongo:go_default_library",
         "@org_mongodb_go_mongo_driver//mongo/options:go_default_library",
     ],

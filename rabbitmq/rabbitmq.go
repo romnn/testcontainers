@@ -8,8 +8,8 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
-	"github.com/romnnn/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // ContainerOptions ...
@@ -38,15 +38,9 @@ func StartRabbitmqContainer(ctx context.Context, options ContainerOptions) (rabb
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "rabbitmq:3.8.1-management",
+		Image:        "rabbitmq:3.8.11-management",
 		ExposedPorts: []string{string(rabbitmqPort)},
 		WaitingFor:   wait.ForLog("Server startup complete").WithStartupTimeout(timeout),
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     50 * 1024 * 1024, // max. 50MB
-				MemorySwap: -1,               // Unlimited swap
-			},
-		*/
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

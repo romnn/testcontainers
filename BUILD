@@ -21,6 +21,6 @@ go_library(
         "@com_github_google_uuid//:go_default_library",
         "@com_github_imdario_mergo//:go_default_library",
         "@com_github_prometheus_common//log:go_default_library",
-        "@com_github_romnnn_testcontainers_go//:go_default_library",
+        "@com_github_testcontainers_testcontainers_go//:go_default_library",
     ],
 )

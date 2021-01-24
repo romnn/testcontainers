@@ -9,8 +9,8 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
-	"github.com/romnnn/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 var mongoMux = new(sync.Mutex)
@@ -61,16 +61,10 @@ func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC 
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "mongo",
+    Image:        "mongo:4.4.3",
 		Env:          env,
 		ExposedPorts: []string{string(mongoPort)},
-		WaitingFor:   wait.ForLog("waiting for connections on port").WithStartupTimeout(timeout),
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     50 * 1024 * 1024, // max. 50MB
-				MemorySwap: -1,               // Unlimited swap
-			},
-		*/
+		WaitingFor:   wait.ForLog("Waiting for connections").WithStartupTimeout(timeout),
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)

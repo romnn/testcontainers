@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/prometheus/common/log"
-	"github.com/romnnn/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 // LogCollector ...

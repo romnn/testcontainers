@@ -8,8 +8,8 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/romnnn/testcontainers-go"
-	"github.com/romnnn/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // ContainerOptions ...
@@ -45,15 +45,9 @@ func StartRedisContainer(ctx context.Context, options ContainerOptions) (redisC 
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "redis:6.0.1",
+		Image:        "redis:6.0.10",
 		ExposedPorts: []string{string(redisPort)},
 		WaitingFor:   wait.ForLog("Ready to accept connections").WithStartupTimeout(timeout),
-		/*
-			Resources: &testcontainers.ContainerResourcers{
-				Memory:     50 * 1024 * 1024, // max. 50MB
-				MemorySwap: -1,               // Unlimited swap
-			},
-		*/
 	}
 
 	if options.Password != "" {
