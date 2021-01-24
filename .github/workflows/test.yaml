@@ -2,18 +2,14 @@ on: [push, pull_request]
 
 name: test
 jobs:
-  test:
-    strategy:
-      matrix:
-        go-version: [1.13.x, 1.14.x, 1.15.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  checks:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
     - uses: actions/setup-go@v2
       with:
-        go-version: ${{ matrix.go-version }}
+        go-version: 1.15.x
 
     - name: install code check tools
       run: |
@@ -28,7 +24,39 @@ jobs:
       with:
         extra_args: --all-files
 
+  test:
+    strategy:
+      matrix:
+        go-version: [1.13.x, 1.14.x, 1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: build
+      run: go build
+
     - name: test
       run: |
         go test -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
         bash <(curl -s https://codecov.io/bash)
+
+  bazel-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: romnnn/setup-bazel-action@master
+      with:
+        version: 3.7.2
+
+    - name: build
+      run: bazel build //:go_default_library
+
+    - name: test
+      run: |
+        bazel build //examples/...:*
+        bazel test //examples/...:*
