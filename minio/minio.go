@@ -52,7 +52,7 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 	}
 
 	req := testcontainers.ContainerRequest{
-    Image:        "minio/minio:RELEASE.2021-01-16T02-19-44Z",
+		Image:        "minio/minio:RELEASE.2021-01-16T02-19-44Z",
 		Env:          env,
 		Cmd:          []string{"server", "/data"},
 		ExposedPorts: []string{string(minioPort)},

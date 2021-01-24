@@ -42,7 +42,7 @@ func StartZookeeperContainer(ctx context.Context, options ContainerOptions) (zkC
 
 	// Do not expose any ports per default
 	req := testcontainers.ContainerRequest{
-    Image: "bitnami/zookeeper:3.6.2",
+		Image: "bitnami/zookeeper:3.6.2",
 		Env: map[string]string{
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
 		},

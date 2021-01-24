@@ -10,8 +10,8 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/prometheus/common/log"
 	tc "github.com/romnnn/testcontainers"
-	"github.com/testcontainers/testcontainers-go"
 	tczk "github.com/romnnn/testcontainers/zookeeper"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 // ContainerOptions ...

@@ -5,19 +5,19 @@ import (
 	"log"
 	"time"
 
+	tc "github.com/romnnn/testcontainers/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-  tc "github.com/romnnn/testcontainers/mongo"
 )
 
 func testDatabaseFunction(mongoClient *mongo.Client) error {
-  _ = mongoClient.Database("testdatabase").Collection("my-collection")
+	_ = mongoClient.Database("testdatabase").Collection("my-collection")
 	log.Println("Implement a real function here")
 	return nil
 }
 
 func main() {
-  // Start mongo container
+	// Start mongo container
 	mongoC, mongoConn, err := tc.StartMongoContainer(context.Background(), tc.ContainerOptions{})
 	if err != nil {
 		log.Fatalf("Failed to start mongoDB container: %v", err)

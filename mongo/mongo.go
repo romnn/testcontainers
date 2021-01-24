@@ -61,7 +61,7 @@ func StartMongoContainer(ctx context.Context, options ContainerOptions) (mongoC 
 	}
 
 	req := testcontainers.ContainerRequest{
-    Image:        "mongo:4.4.3",
+		Image:        "mongo:4.4.3",
 		Env:          env,
 		ExposedPorts: []string{string(mongoPort)},
 		WaitingFor:   wait.ForLog("Waiting for connections").WithStartupTimeout(timeout),
