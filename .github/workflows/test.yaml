@@ -14,7 +14,7 @@ jobs:
     - name: install code check tools
       run: |
         go get -u golang.org/x/lint/golint
-        go get -u github.com/fzipp/gocyclo
+        go get -u github.com/fzipp/gocyclo/cmd/gocyclo
         go get -u github.com/mitchellh/gox
         # do not change go.mod and go.sum
         git checkout go.mod go.sum
