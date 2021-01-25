@@ -38,12 +38,13 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: build
-      run: go build
+      run: |
+        go build ./...
 
     - name: test
       run: |
-        go test -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
-        bash <(curl -s https://codecov.io/bash)
+        go test -v -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
+        (bash <(curl -s https://codecov.io/bash))> /dev/null
 
   bazel-test:
     runs-on: ubuntu-latest
@@ -59,4 +60,4 @@ jobs:
     - name: test
       run: |
         bazel build //examples/...:*
-        bazel test //examples/...:*
+        bazel test --show_result=0 --noshow_progress --noshow_loading_progress --logging=0 //examples/...:*
