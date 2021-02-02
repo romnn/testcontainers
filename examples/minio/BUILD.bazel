@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["minio_example.go"],
-    importpath = "github.com/romnnn/testcontainers/examples/minio",
+    importpath = "github.com/romnn/testcontainers/examples/minio",
     visibility = ["//visibility:private"],
     deps = [
         "//minio:go_default_library",

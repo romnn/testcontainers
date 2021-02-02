@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-redis/redis"
-	tcredis "github.com/romnnn/testcontainers/redis"
+	tcredis "github.com/romnn/testcontainers/redis"
 	log "github.com/sirupsen/logrus"
 )
 

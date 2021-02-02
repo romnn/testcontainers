@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	tc "github.com/romnnn/testcontainers"
+	tc "github.com/romnn/testcontainers"
 )
 
 // TestKafkaContainer ...

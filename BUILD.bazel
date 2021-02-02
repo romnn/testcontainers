@@ -1,7 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
-# gazelle:prefix github.com/romnnn/testcontainers
+# gazelle:prefix github.com/romnn/testcontainers
 gazelle(name = "gazelle")
 
 go_library(
@@ -14,7 +14,7 @@ go_library(
         "testcontainers.go",
         "utils.go",
     ],
-    importpath = "github.com/romnnn/testcontainers",
+    importpath = "github.com/romnn/testcontainers",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_cenkalti_backoff_v4//:go_default_library",

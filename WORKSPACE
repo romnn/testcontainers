@@ -1797,8 +1797,8 @@ go_repository(
 )
 
 go_repository(
-    name = "com_github_romnnn_testcontainers_go",
-    importpath = "github.com/romnnn/testcontainers-go",
+    name = "com_github_romnn_testcontainers_go",
+    importpath = "github.com/romnn/testcontainers-go",
     sum = "h1:Zg7g/6zA35UPj0lbapQPAVokOW60CTaCDg6i1WVP5/g=",
     version = "v0.5.3-0.20200811133001-6599cc836290",
 )

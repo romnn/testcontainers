@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: romnnn/setup-bazel-action@master
+    - uses: romnn/setup-bazel-action@master
       with:
         version: 3.7.2
 

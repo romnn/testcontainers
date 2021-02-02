@@ -7,7 +7,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	tcminio "github.com/romnnn/testcontainers/minio"
+	tcminio "github.com/romnn/testcontainers/minio"
 	log "github.com/sirupsen/logrus"
 )
 

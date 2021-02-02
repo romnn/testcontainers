@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["redis_example.go"],
-    importpath = "github.com/romnnn/testcontainers/examples/redis",
+    importpath = "github.com/romnn/testcontainers/examples/redis",
     visibility = ["//visibility:private"],
     deps = [
         "//redis:go_default_library",

@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Shopify/sarama"
-	tc "github.com/romnnn/testcontainers"
-	tckafka "github.com/romnnn/testcontainers/kafka"
+	tc "github.com/romnn/testcontainers"
+	tckafka "github.com/romnn/testcontainers/kafka"
 	log "github.com/sirupsen/logrus"
 )
 

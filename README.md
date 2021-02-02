@@ -1,8 +1,8 @@
 ## testcontainers
 
-[![GitHub](https://img.shields.io/github/license/romnnn/testcontainers)](https://github.com/romnnn/testcontainers)
-[![GoDoc](https://godoc.org/github.com/romnnn/testcontainers?status.svg)](https://godoc.org/github.com/romnnn/testcontainers)  [![Test Coverage](https://codecov.io/gh/romnnn/testcontainers/branch/master/graph/badge.svg)](https://codecov.io/gh/romnnn/testcontainers)
-[![Release](https://img.shields.io/github/release/romnnn/testcontainers)](https://github.com/romnnn/testcontainers/releases/latest)
+[![GitHub](https://img.shields.io/github/license/romnn/testcontainers)](https://github.com/romnn/testcontainers)
+[![GoDoc](https://godoc.org/github.com/romnn/testcontainers?status.svg)](https://godoc.org/github.com/romnn/testcontainers)  [![Test Coverage](https://codecov.io/gh/romnn/testcontainers/branch/master/graph/badge.svg)](https://codecov.io/gh/romnn/testcontainers)
+[![Release](https://img.shields.io/github/release/romnn/testcontainers)](https://github.com/romnn/testcontainers/releases/latest)
 
 A collection of pre-configured [testcontainers](https://github.com/testcontainers/testcontainers-go) for your golang integration tests.
 
@@ -22,7 +22,7 @@ import (
 	"log"
 	"time"
 
-	tc "github.com/romnnn/testcontainers/mongo"
+	tc "github.com/romnn/testcontainers/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

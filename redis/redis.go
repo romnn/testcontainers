@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/docker/go-connections/nat"
-	tc "github.com/romnnn/testcontainers"
+	tc "github.com/romnn/testcontainers"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )

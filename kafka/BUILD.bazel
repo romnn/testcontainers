@@ -7,7 +7,7 @@ go_library(
         "kafka.go",
         "producer.go",
     ],
-    importpath = "github.com/romnnn/testcontainers/kafka",
+    importpath = "github.com/romnn/testcontainers/kafka",
     visibility = ["//visibility:public"],
     deps = [
         "//:go_default_library",

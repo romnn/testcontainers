@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	tc "github.com/romnnn/testcontainers/mongo"
+	tc "github.com/romnn/testcontainers/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

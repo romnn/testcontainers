@@ -7,7 +7,7 @@ go_library(
         "producer.go",
         "rabbitmq.go",
     ],
-    importpath = "github.com/romnnn/testcontainers/rabbitmq",
+    importpath = "github.com/romnn/testcontainers/rabbitmq",
     visibility = ["//visibility:public"],
     deps = [
         "//:go_default_library",

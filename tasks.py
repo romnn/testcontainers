@@ -10,7 +10,7 @@ import os
 from invoke import task
 import webbrowser
 
-PKG = "github.com/romnnn/testcontainers"
+PKG = "github.com/romnn/testcontainers"
 CMD_PKG = PKG
 
 

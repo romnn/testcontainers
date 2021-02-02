@@ -1,4 +1,4 @@
-module github.com/romnnn/testcontainers
+module github.com/romnn/testcontainers
 
 go 1.13
 

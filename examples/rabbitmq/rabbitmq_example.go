@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	tcrabbitmq "github.com/romnnn/testcontainers/rabbitmq"
+	tcrabbitmq "github.com/romnn/testcontainers/rabbitmq"
 	log "github.com/sirupsen/logrus"
 )
 
