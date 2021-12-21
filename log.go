@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/prometheus/common/log"
+	"github.com/sirupsen/logrus"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -31,7 +31,7 @@ func EnableLogger(container testcontainers.Container, logger *LogCollector) {
 	// defer logger.mux.Unlock()
 
 	if err := container.StartLogProducer(context.Background()); err != nil {
-		log.Errorf("Failed to start log producer: %v", err)
+		logrus.Errorf("Failed to start log producer: %v", err)
 		return
 	}
 	container.FollowOutput(logger)
