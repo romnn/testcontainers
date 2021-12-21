@@ -1071,8 +1071,8 @@ gazelle_dependencies()
 go_repository(
     name = "co_honnef_go_tools",
     importpath = "honnef.co/go/tools",
-    sum = "h1:3JgtbtFHMiCmsznwGVTUWbgGov+pVqnlf1dEJTNAXeM=",
-    version = "v0.0.1-2019.2.3",
+    sum = "h1:/hemPrYIhOhy8zYrNj+069zDB68us2sMGsfkFJO0iZs=",
+    version = "v0.0.0-20190523083050-ea95bdfd59fc",
 )
 
 go_repository(
@@ -1764,8 +1764,8 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_client_model",
     importpath = "github.com/prometheus/client_model",
-    sum = "h1:uq5h0d+GuxiXLJLNABMgp2qUWDPiLvgCzz2dUR+/W/M=",
-    version = "v0.2.0",
+    sum = "h1:gQz4mCbXsO+nc9n1hCxHcGA3Zx3Eo+UHZoInFGUIXNM=",
+    version = "v0.0.0-20190812154241-14fe0d1b01d4",
 )
 
 go_repository(
@@ -1778,8 +1778,8 @@ go_repository(
 go_repository(
     name = "com_github_prometheus_procfs",
     importpath = "github.com/prometheus/procfs",
-    sum = "h1:F0+tqvhOksq22sc6iCHF5WGlWjdwj92p0udFh1VFBS8=",
-    version = "v0.1.3",
+    sum = "h1:hhvfGDVThBnd4kYisSFmYuHYeUhglxcwag7FhVPH9zM=",
+    version = "v0.0.0-20180125133057-cb4147076ac7",
 )
 
 go_repository(
@@ -1890,8 +1890,8 @@ go_repository(
 go_repository(
     name = "com_google_cloud_go",
     importpath = "cloud.google.com/go",
-    sum = "h1:eOI3/cP2VTU6uZLDYAoic+eyzzB9YyGmJ7eIjl8rOPg=",
-    version = "v0.34.0",
+    sum = "h1:e0WKqKTd5BnrG8aKH3J3h+QvEIQtSUcf2n5UZ5ZgLtQ=",
+    version = "v0.26.0",
 )
 
 go_repository(
@@ -1988,8 +1988,8 @@ go_repository(
 go_repository(
     name = "io_opencensus_go",
     importpath = "go.opencensus.io",
-    sum = "h1:75k/FF0Q2YM8QYo07VPddOLBslDt1MZOdEslOHvmzAs=",
-    version = "v0.22.2",
+    sum = "h1:C9hSCOW830chIVkdja34wa6Ky+IzWllkUinR+BtRZd4=",
+    version = "v0.22.0",
 )
 
 go_repository(
@@ -2037,8 +2037,8 @@ go_repository(
 go_repository(
     name = "org_golang_x_lint",
     importpath = "golang.org/x/lint",
-    sum = "h1:5hukYrvBGR8/eNkX5mdUezrA6JiaEZDtJb9Ei+1LlBs=",
-    version = "v0.0.0-20190930215403-16217165b5de",
+    sum = "h1:XQyxROzUlZH+WIQwySDgnISgOivlhjIEwaQaJEJrrN0=",
+    version = "v0.0.0-20190313153728-d0100b6bd8b3",
 )
 
 go_repository(
@@ -2051,8 +2051,8 @@ go_repository(
 go_repository(
     name = "org_golang_x_oauth2",
     importpath = "golang.org/x/oauth2",
-    sum = "h1:Wo7BWFiOk0QRFMLYMqJGFMd9CgUAcGx7V+qEg/h5IBI=",
-    version = "v0.0.0-20190226205417-e64efc72b421",
+    sum = "h1:vEDujvNQGv4jgYKudGeI/+DAX4Jffq6hpD55MmoEvKs=",
+    version = "v0.0.0-20180821212333-d2e6202438be",
 )
 
 go_repository(

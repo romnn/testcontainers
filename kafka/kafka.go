@@ -8,9 +8,9 @@ import (
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/prometheus/common/log"
 	tc "github.com/romnn/testcontainers"
 	tczk "github.com/romnn/testcontainers/zookeeper"
+	"github.com/sirupsen/logrus"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -151,7 +151,7 @@ func startKafkaContainer(ctx context.Context, options ContainerOptions) (kafkaC 
 	script += "/etc/confluent/docker/configure && "
 	script += "/etc/confluent/docker/launch"
 	cmd := []string{"/bin/bash", "-c", fmt.Sprintf("printf '%s' > %s && chmod 700 %s", script, startScript, startScript)}
-	log.Debug(cmd)
+	logrus.Debug(cmd)
 
 	exitCode, err := kafkaC.Exec(ctx, cmd)
 	if err != nil {
