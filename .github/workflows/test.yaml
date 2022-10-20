@@ -17,8 +17,6 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
           go install golang.org/x/lint/golint@latest
           go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-          # do not change go.mod and go.sum
-          # git checkout go.mod go.sum
 
       - name: Code checks
         run: pre-commit run --all-files
@@ -50,13 +48,6 @@ jobs:
           -coverpkg=all
           -covermode=atomic
           ./...
-          # (bash <(curl -s https://codecov.io/bash))> /dev/null
 
       - uses: codecov/codecov-action@v3
-        # with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          # files: ./coverage1.xml,./coverage2.xml # optional
-          # flags: unittests # optional
-          # name: codecov-umbrella # optional
-          # fail_ci_if_error: true # optional (default = false)
-          # verbose: true # optional (default = false)
+        if: ${{ matrix.go-version == '1.19.x' }}
