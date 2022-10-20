@@ -22,6 +22,12 @@ def format(c):
 
 
 @task
+def embed(c):
+    """Embed examples into README"""
+    c.run("npx embedme README.md")
+
+
+@task
 def test(c):
     """Run tests"""
     c.run("env GO111MODULE=on go test -race ./...")
