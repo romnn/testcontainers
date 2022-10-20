@@ -1,23 +1,19 @@
-# Ignore all
+# ignore all
 *
 
-# Unignore all with extensions
+# unignore all with extensions
 !*.*
 
-# Unignore all dirs
+# unignore all dirs
 !*/
 
-# Unignore bazel files without extension
-!**/WORKSPACE
-!**/BUILD
-
-# Unignore Dockerfile and other useful files
+# unignore Dockerfile and other useful files without extension
 !**/Dockerfile
 !**/.dockerignore
 !**/.gitattributes
 !**/LICENSE
 
-### Above combination will ignore all files without extension ###
+### above combination will ignore all files without extension
 
 .DS_Store
 .vscode/

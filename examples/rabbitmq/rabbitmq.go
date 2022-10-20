@@ -1,33 +1,28 @@
-package rabbitmq
+package main
 
 import (
 	"context"
-	"sort"
-	"testing"
+	"log"
 	"time"
 
-	"github.com/romnn/deepequal"
 	tc "github.com/romnn/testcontainers"
+	tcrabbitmq "github.com/romnn/testcontainers/rabbitmq"
 	"github.com/streadway/amqp"
 )
 
-// TestRabbitmq...
-func TestRabbitmq(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	container, err := Start(ctx, Options{
-		ImageTag: "3.11.2",
+func run() {
+	container, err := tcrabbitmq.Start(context.Background(), tcrabbitmq.Options{
+		ImageTag: "3.11.2", // you could use latest here
 	})
 	if err != nil {
-		t.Fatalf("failed to start container: %v", err)
+		log.Fatalf("failed to start container: %v", err)
 	}
-	defer container.Terminate(ctx)
+	defer container.Terminate(context.Background())
 
 	// start logger
-	logger, err := tc.StartLogger(ctx, container.Container)
+	logger, err := tc.StartLogger(context.Background(), container.Container)
 	if err != nil {
-		t.Errorf("failed to start logger: %v", err)
+		log.Printf("failed to start logger: %v", err)
 	} else {
 		defer logger.Stop()
 		go logger.LogToStdout()
@@ -37,7 +32,7 @@ func TestRabbitmq(t *testing.T) {
 	exchangeRoutingKey := "0"
 
 	// setup the producer
-	producerOptions := ProducerOptions{
+	producerOptions := tcrabbitmq.ProducerOptions{
 		Host:               container.Host,
 		Port:               container.Port,
 		ExchangeName:       exchangeName,
@@ -46,13 +41,13 @@ func TestRabbitmq(t *testing.T) {
 
 	rmqConn, rmqChan, err := producerOptions.SetupConnection()
 	if err != nil {
-		t.Fatalf("failed to setup producer: %v", err)
+		log.Fatalf("failed to setup producer: %v", err)
 	}
 	defer rmqConn.Close()
 	defer rmqChan.Close()
 
 	// setup the consumer
-	consumerOptions := ConsumerOptions{
+	consumerOptions := tcrabbitmq.ConsumerOptions{
 		ExchangeName:       exchangeName,
 		QueueName:          "queue_name",
 		ExchangeRoutingKey: exchangeRoutingKey,
@@ -61,7 +56,7 @@ func TestRabbitmq(t *testing.T) {
 
 	err = consumerOptions.SetupQueue(rmqChan)
 	if err != nil {
-		t.Fatalf("failed to setup queue: %v", err)
+		log.Fatalf("failed to setup queue: %v", err)
 	}
 
 	// consume queue
@@ -75,7 +70,7 @@ func TestRabbitmq(t *testing.T) {
 		nil,                                // args
 	)
 	if err != nil {
-		t.Fatalf("failed to register consumer: %v", err)
+		log.Fatalf("failed to register consumer: %v", err)
 	}
 
 	// publish some messages
@@ -92,7 +87,7 @@ func TestRabbitmq(t *testing.T) {
 					Body:        []byte(msg),
 				})
 			if err != nil {
-				t.Errorf(`failed to publish message "%s": %v`, msg, err)
+				log.Fatalf(`failed to publish message "%s": %v`, msg, err)
 			}
 		}
 	}()
@@ -103,13 +98,12 @@ func TestRabbitmq(t *testing.T) {
 		case msg := <-consumeChan:
 			received = append(received, string(msg.Body))
 		case <-time.After(10 * time.Second):
-			t.Fatalf("sent %d messages, but received %d within timeout", len(messages), len(received))
+			log.Fatalf("sent %d messages, but received %d within timeout", len(messages), len(received))
 		}
 	}
+	log.Printf("received %v", received)
+}
 
-	sort.Sort(sort.StringSlice(messages))
-	sort.Sort(sort.StringSlice(received))
-	if equal, err := deepequal.DeepEqual(messages, received); !equal {
-		t.Errorf("expected %v, but received %v: %v", messages, received, err)
-	}
+func main() {
+	run()
 }

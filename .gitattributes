@@ -1,3 +1,1 @@
 tasks.py linguist-vendored
-WORKSPACE linguist-generated
-*.bazel linguist-generated

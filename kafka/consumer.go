@@ -3,11 +3,12 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
 	"github.com/Shopify/sarama"
-	log "github.com/sirupsen/logrus"
+	"github.com/cenkalti/backoff/v4"
 )
 
 const (
@@ -25,9 +26,9 @@ type ConsumerOptions struct {
 
 // Consumer ...
 type Consumer struct {
-	ready    chan error
-	Messages chan *sarama.ConsumerMessage
-	client   sarama.ConsumerGroup
+	readyChan   chan error
+	MessageChan chan *sarama.ConsumerMessage
+	client      sarama.ConsumerGroup
 }
 
 // Cleanup ...
@@ -37,17 +38,24 @@ func (consumer *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
 
 // ConsumeClaim ...
 func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for message := range claim.Messages() {
-		log.Debugf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-		consumer.Messages <- message
-		session.MarkMessage(message, "")
+	// Do not move the code below to a goroutine.
+	// `ConsumeClaim` itself is called within a goroutine, see:
+	for {
+		select {
+		case message := <-claim.Messages():
+			consumer.MessageChan <- message
+			session.MarkMessage(message, "")
+
+			// Should return when `session.Context()` is done.
+		case <-session.Context().Done():
+			return nil
+		}
 	}
-	return nil
 }
 
 // Setup ...
 func (consumer *Consumer) Setup(sarama.ConsumerGroupSession) error {
-	consumer.ready <- nil
+	consumer.readyChan <- nil
 	return nil
 }
 
@@ -56,42 +64,41 @@ func (consumer *Consumer) Close() error {
 	return consumer.client.Close()
 }
 
-func newConsumerGroup(options ConsumerOptions, config *sarama.Config) (sarama.ConsumerGroup, error) {
-	var attempt int
-	for {
-		client, err := sarama.NewConsumerGroup(options.Brokers, options.Group, config)
-		if err != nil {
-			if attempt >= maxRetries {
-				return nil, fmt.Errorf("Failed to start kafka consumer: %s", err.Error())
-			}
-			attempt++
-			log.Infof("Failed to connect: %s. (Attempt %d of %d)", err.Error(), attempt, maxRetries)
-			time.Sleep(time.Duration(retryIntervalSec) * time.Second)
-			continue
-		}
-		return client, nil
+func (options *ConsumerOptions) newConsumerGroup(config *sarama.Config) (sarama.ConsumerGroup, error) {
+
+	var group sarama.ConsumerGroup
+	newConsumerGroup := func() error {
+		var err error
+		group, err = sarama.NewConsumerGroup(options.Brokers, options.Group, config)
+		return err
 	}
+
+	bo := backoff.NewExponentialBackOff()
+	bo.Multiplier = 1.1
+	bo.InitialInterval = 2 * time.Second
+	bo.MaxElapsedTime = 2 * time.Minute
+	err := backoff.Retry(newConsumerGroup, bo)
+	return group, err
 }
 
-// ConsumeGroup ...
-func ConsumeGroup(ctx context.Context, options ConsumerOptions) (*Consumer, *sync.WaitGroup, error) {
+// StartConsumer ...
+func (options *ConsumerOptions) StartConsumer(ctx context.Context) (Consumer, *sync.WaitGroup, error) {
 	config := sarama.NewConfig()
-	// config.Consumer.Return.Errors = true
 
-	c := &Consumer{
-		ready:    make(chan error, 2),
-		Messages: make(chan *sarama.ConsumerMessage),
+	consumer := Consumer{
+		readyChan:   make(chan error), // , 2),
+		MessageChan: make(chan *sarama.ConsumerMessage),
 	}
 
 	version, err := sarama.ParseKafkaVersion(options.Version)
 	if err != nil {
-		return c, nil, fmt.Errorf("Error parsing Kafka version: %v", err)
+		return consumer, nil, fmt.Errorf(`failed to parse kafka version "%q": %v`, options.Version, err)
 	}
 	config.Version = version
 
-	c.client, err = newConsumerGroup(options, config)
+	consumer.client, err = options.newConsumerGroup(config)
 	if err != nil {
-		return c, nil, fmt.Errorf("Error creating consumer group client: %v", err)
+		return consumer, nil, fmt.Errorf("error creating consumer group: %v", err)
 	}
 
 	wg := &sync.WaitGroup{}
@@ -102,25 +109,29 @@ func ConsumeGroup(ctx context.Context, options ConsumerOptions) (*Consumer, *syn
 			// Consume should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := c.client.Consume(ctx, options.Topics, c); err != nil {
-				c.ready <- err
+			if err := consumer.client.Consume(ctx, options.Topics, &consumer); err != nil {
+				consumer.readyChan <- err
 			}
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
-				log.Debug("Context canceled")
-				c.ready <- err
-				break
+				return
+				// log.Println("context canceled")
+				// consumer.readyChan <- err
+				// break
 			}
-			c.ready = make(chan error, 2)
+			// consumer.readyChan = make(chan error, 2)
+			consumer.readyChan = make(chan error)
 		}
-		log.Debug("Consumer loop exiting")
+		log.Println("consumer loop exiting")
 	}()
 
 	// Wait until the consumer has been set up
-	if err = <-c.ready; err != nil {
-		return c, wg, fmt.Errorf("Error setting up consumer: %v", err)
-	}
+	<-consumer.readyChan
 
-	log.Debug("Sarama consumer up and running!...")
-	return c, wg, nil
+	// if err = <-consumer.readyChan; err != nil {
+	// 	return consumer, wg, fmt.Errorf("error setting up consumer: %v", err)
+	// }
+
+	log.Println("consumer started")
+	return consumer, wg, nil
 }

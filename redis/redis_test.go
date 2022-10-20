@@ -5,36 +5,56 @@ import (
 	"testing"
 
 	"github.com/go-redis/redis"
-	log "github.com/sirupsen/logrus"
+	tc "github.com/romnn/testcontainers"
 )
 
-// TestRabbitmqContainer ...
-func TestRabbitmqContainer(t *testing.T) {
+// TestRedis ...
+func TestRedis(t *testing.T) {
 	t.Parallel()
-	// Start redis container
-	redisCont, redisConf, err := StartRedisContainer(context.Background(), ContainerOptions{})
+
+	ctx := context.Background()
+	container, err := Start(ctx, Options{
+		ImageTag: "7.0.5",
+	})
 	if err != nil {
-		log.Fatalf("Failed to start redis container: %v", err)
+		t.Fatalf("failed to start redis container: %v", err)
 	}
-	defer redisCont.Terminate(context.Background())
+	defer container.Terminate(ctx)
+
+	// start logger
+	logger, err := tc.StartLogger(ctx, container.Container)
+	if err != nil {
+		t.Errorf("failed to start logger: %v", err)
+	} else {
+		defer logger.Stop()
+		go logger.LogToStdout()
+	}
 
 	// Connect to redis database
 	db := redis.NewClient(&redis.Options{
-		Addr:     redisConf.ConnectionURI(),
-		Password: redisConf.Password,
+		Addr:     container.ConnectionURI(),
+		Password: container.Password,
 		DB:       1,
 	})
 
 	// Set some data
-	db.HSet("my-hash-key", "key1", "Hello ")
+	db.HSet("my-hash-key", "key1", "Hello")
 	db.HSet("my-hash-key", "key2", "World!")
 
 	// Get the data back
-	k1, _ := db.HGet("my-hash-key", "key1").Result() // "Hello "
-	k2, _ := db.HGet("my-hash-key", "key2").Result() // "World!"
+	k1, err := db.HGet("my-hash-key", "key1").Result() // "Hello"
+	if err != nil {
+		t.Errorf("failed to get key1: %v", err)
+	}
+	k2, err := db.HGet("my-hash-key", "key2").Result() // "World!"
+	if err != nil {
+		t.Errorf("failed to get key2: %v", err)
+	}
 
-	expected := "Hello World!"
-	if k1+k2 != expected {
-		t.Errorf("Expeceted to get %s from redis, but got %s", k1+k2, expected)
+	if k1 != "Hello" {
+		t.Errorf(`expected "Hello", but got %s`, k1)
+	}
+	if k2 != "World!" {
+		t.Errorf(`expected "World!", but got %s`, k2)
 	}
 }

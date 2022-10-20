@@ -2,38 +2,49 @@ package testcontainers
 
 import (
 	"context"
-	"sync"
+	"log"
 
-	"github.com/prometheus/common/log"
 	"github.com/testcontainers/testcontainers-go"
 )
 
-// LogCollector ...
 type LogCollector struct {
-	MessageChan chan string
-	Mux         sync.Mutex
+	LogChan   chan testcontainers.Log
+	container testcontainers.Container
 }
 
 // Accept ...
-func (c *LogCollector) Accept(l testcontainers.Log) {
-	c.MessageChan <- string(l.Content)
+func (logger *LogCollector) Accept(l testcontainers.Log) {
+	logger.LogChan <- l
 }
 
-// EnableLogger ...
-func EnableLogger(container testcontainers.Container, logger *LogCollector) {
-	/**logger = LogCollector{
-		MessageChan: make(chan string),
-		// mux: sync.Mutex{},
-	}
-	*/
+// Stop ...
+func (logger *LogCollector) Stop() {
+	logger.container.StopLogProducer()
+	close(logger.LogChan)
+}
 
-	// logger.mux.Lock()
-	// defer logger.mux.Unlock()
-
-	if err := container.StartLogProducer(context.Background()); err != nil {
-		log.Errorf("Failed to start log producer: %v", err)
-		return
+// LogToStdout ...
+func (logger *LogCollector) LogToStdout() {
+	for {
+		message, ok := <-logger.LogChan
+		if !ok {
+			return
+		}
+		log.Print(string(message.Content))
 	}
-	container.FollowOutput(logger)
-	// User must call StopLogProducer() himself
+
+}
+
+// StartLogger ...
+func StartLogger(ctx context.Context, c testcontainers.Container) (LogCollector, error) {
+	logger := LogCollector{
+		LogChan:   make(chan testcontainers.Log, 10),
+		container: c,
+	}
+
+	err := c.StartLogProducer(ctx)
+	if err == nil {
+		c.FollowOutput(&logger)
+	}
+	return logger, err
 }

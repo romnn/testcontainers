@@ -11,13 +11,12 @@ import (
 
 // CreateNetwork creates a docker container network
 func CreateNetwork(request testcontainers.NetworkRequest, timeoutMin time.Duration) (net testcontainers.Network, err error) {
+
 	createNetwork := func() error {
 		var err error
-		ClientMux.Lock()
 		net, err = testcontainers.GenericNetwork(context.Background(), testcontainers.GenericNetworkRequest{
 			NetworkRequest: request,
 		})
-		ClientMux.Unlock()
 		return err
 	}
 
@@ -27,7 +26,7 @@ func CreateNetwork(request testcontainers.NetworkRequest, timeoutMin time.Durati
 	bo.MaxElapsedTime = timeoutMin * time.Minute
 	err = backoff.Retry(createNetwork, bo)
 	if err != nil {
-		err = fmt.Errorf("Failed to create the docker test network: %v", err)
+		err = fmt.Errorf("failed to create docker network: %v", err)
 		return
 	}
 	return

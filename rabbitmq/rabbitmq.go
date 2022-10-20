@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -12,70 +11,74 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ContainerOptions ...
-type ContainerOptions struct {
+// Options ...
+type Options struct {
 	tc.ContainerOptions
+	ImageTag string
 }
 
-// Config ...
-type Config struct {
+// Container ...
+type Container struct {
+	Container testcontainers.Container
 	tc.ContainerConfig
 	Host string
 	Port int64
 }
 
-const (
-	defaultRabbitmqPort = 5672
-)
+// Terminate ...
+func (c *Container) Terminate(ctx context.Context) {
+	if c.Container != nil {
+		c.Container.Terminate(ctx)
+	}
+}
 
-// StartRabbitmqContainer ...
-func StartRabbitmqContainer(ctx context.Context, options ContainerOptions) (rabbitmqC testcontainers.Container, rabbitmqConfig Config, err error) {
-	rabbitmqPort, _ := nat.NewPort("", strconv.Itoa(defaultRabbitmqPort))
+// Start...
+func Start(ctx context.Context, options Options) (Container, error) {
+	var container Container
+	port, err := nat.NewPort("", "5672")
+	if err != nil {
+		return container, fmt.Errorf("failed to build port: %v", err)
+	}
 
 	timeout := options.ContainerOptions.StartupTimeout
 	if int64(timeout) < 1 {
 		timeout = 5 * time.Minute // Default timeout
 	}
 
+	tag := "latest"
+	if options.ImageTag != "" {
+		tag = options.ImageTag
+	}
+
 	req := testcontainers.ContainerRequest{
-		Image:        "rabbitmq:3.8.11-management",
-		ExposedPorts: []string{string(rabbitmqPort)},
-		WaitingFor:   wait.ForLog("Server startup complete").WithStartupTimeout(timeout),
+		Image:        fmt.Sprintf("rabbitmq:%s", tag),
+		ExposedPorts: []string{string(port)},
+		WaitingFor:   wait.ForListeningPort(port).WithStartupTimeout(timeout),
+		// WaitingFor:   wait.ForLog("Server startup complete").WithStartupTimeout(timeout),
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	tc.ClientMux.Lock()
-	rabbitmqC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	rmqContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	tc.ClientMux.Unlock()
 	if err != nil {
-		err = fmt.Errorf("Failed to start rabbitmq container: %v", err)
-		return
+		return container, fmt.Errorf("failed to start container: %v", err)
 	}
+	container.Container = rmqContainer
 
-	host, err := rabbitmqC.Host(ctx)
+	host, err := rmqContainer.Host(ctx)
 	if err != nil {
-		err = fmt.Errorf("Failed to get rabbitmq container host: %v", err)
-		return
+		return container, fmt.Errorf("failed to get container host: %v", err)
 	}
+	container.Host = host
 
-	port, err := rabbitmqC.MappedPort(ctx, rabbitmqPort)
+	realPort, err := rmqContainer.MappedPort(ctx, port)
 	if err != nil {
-		err = fmt.Errorf("Failed to get exposed rabbitmq container port: %v", err)
-		return
+		return container, fmt.Errorf("failed to get exposed container port: %v", err)
 	}
+	container.Port = int64(realPort.Int())
 
-	rabbitmqConfig = Config{
-		Host: host,
-		Port: int64(port.Int()),
-	}
-
-	if options.CollectLogs {
-		rabbitmqConfig.ContainerConfig.Log = new(tc.LogCollector)
-		go tc.EnableLogger(rabbitmqC, rabbitmqConfig.ContainerConfig.Log)
-	}
-	return
+	return container, nil
 }

@@ -3,7 +3,6 @@ package zookeeper
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -12,71 +11,88 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ContainerOptions ...
-type ContainerOptions struct {
+// Options ...
+type Options struct {
 	tc.ContainerOptions
+	LogLevel string
+	ImageTag string
 }
 
-// Config ...
-type Config struct {
+// Container ...
+type Container struct {
+	Container testcontainers.Container
 	tc.ContainerConfig
 	Host string
 	Port uint
-	log  *tc.LogCollector
 }
 
-func (zkc Config) String() string {
-	return fmt.Sprintf("%s:%d", zkc.Host, zkc.Port)
+// Terminate ...
+func (c *Container) Terminate(ctx context.Context) {
+	if c.Container != nil {
+		c.Container.Terminate(ctx)
+	}
 }
 
-const defaultZookeeperPort = 2181
+// ConnectionURI...
+func (c *Container) ConnectionURI() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
 
-// StartZookeeperContainer ...
-func StartZookeeperContainer(ctx context.Context, options ContainerOptions) (zkC testcontainers.Container, zkConfig *Config, err error) {
-	zookeeperPort, _ := nat.NewPort("", strconv.Itoa(defaultZookeeperPort))
+// Start...
+func Start(ctx context.Context, options Options) (Container, error) {
+	var container Container
+	port, err := nat.NewPort("", "2181")
+	if err != nil {
+		return container, fmt.Errorf("failed to build port: %v", err)
+	}
 
 	timeout := options.ContainerOptions.StartupTimeout
 	if int64(timeout) < 1 {
 		timeout = 5 * time.Minute // Default timeout
 	}
 
+	tag := "latest"
+	if options.ImageTag != "" {
+		tag = options.ImageTag
+	}
+
+	logLevel := "WARN"
+	if options.LogLevel != "" {
+		logLevel = options.LogLevel
+	}
+
 	// Do not expose any ports per default
 	req := testcontainers.ContainerRequest{
-		Image: "bitnami/zookeeper:3.6.2",
+		Image: fmt.Sprintf("bitnami/zookeeper:%s", tag),
 		Env: map[string]string{
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
+			"ZOO_LOG_LEVEL":         logLevel,
 		},
-		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
+		// WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
+		WaitingFor: wait.ForListeningPort(port).WithStartupTimeout(timeout),
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	tc.ClientMux.Lock()
-	zkC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	zookeeperContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	tc.ClientMux.Unlock()
 	if err != nil {
-		return
+		return container, fmt.Errorf("failed to start container: %v", err)
 	}
+	container.Container = zookeeperContainer
 
-	port := zookeeperPort
+	realPort := port
 	if len(req.ExposedPorts) > 0 {
-		port, err = zkC.MappedPort(ctx, zookeeperPort)
+		realPort, err = zookeeperContainer.MappedPort(ctx, port)
 		if err != nil {
-			return
+			return container, fmt.Errorf("failed to get exposed container port: %v", err)
 		}
-	}
 
-	zkConfig = &Config{
-		Host: "zookeeper",
-		Port: uint(port.Int()),
 	}
+	container.Port = uint(realPort.Int())
+	container.Host = "zookeeper"
 
-	if options.CollectLogs {
-		zkConfig.ContainerConfig.Log = new(tc.LogCollector)
-		go tc.EnableLogger(zkC, zkConfig.ContainerConfig.Log)
-	}
-	return
+	return container, nil
 }

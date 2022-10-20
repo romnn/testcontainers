@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -12,80 +11,86 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ContainerOptions ...
-type ContainerOptions struct {
+// Options ...
+type Options struct {
 	tc.ContainerOptions
 	Password string
+	ImageTag string
 }
 
-// Config ...
-type Config struct {
+// Container ...
+type Container struct {
+	Container testcontainers.Container
 	tc.ContainerConfig
 	Host     string
 	Port     int64
 	Password string
 }
 
+// Terminate ...
+func (c *Container) Terminate(ctx context.Context) {
+	if c.Container != nil {
+		c.Container.Terminate(ctx)
+	}
+}
+
 // ConnectionURI ...
-func (c Config) ConnectionURI() string {
+func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
-const (
-	defaultRedisPort = 6379
-)
-
-// StartRedisContainer ...
-func StartRedisContainer(ctx context.Context, options ContainerOptions) (redisC testcontainers.Container, redisConfig Config, err error) {
-	redisPort, _ := nat.NewPort("", strconv.Itoa(defaultRedisPort))
+// Start...
+func Start(ctx context.Context, options Options) (Container, error) {
+	var container Container
+	port, err := nat.NewPort("", "6379")
+	if err != nil {
+		return container, fmt.Errorf("failed to build port: %v", err)
+	}
 
 	timeout := options.ContainerOptions.StartupTimeout
 	if int64(timeout) < 1 {
 		timeout = 5 * time.Minute // Default timeout
 	}
 
+	tag := "latest"
+	if options.ImageTag != "" {
+		tag = options.ImageTag
+	}
+
 	req := testcontainers.ContainerRequest{
-		Image:        "redis:6.0.10",
-		ExposedPorts: []string{string(redisPort)},
-		WaitingFor:   wait.ForLog("Ready to accept connections").WithStartupTimeout(timeout),
+		Image:        fmt.Sprintf("redis:%s", tag),
+		ExposedPorts: []string{string(port)},
+		WaitingFor:   wait.ForListeningPort(port).WithStartupTimeout(timeout),
 	}
 
 	if options.Password != "" {
 		req.Cmd = []string{fmt.Sprintf("redis-server --requirepass %s", options.Password)}
-		redisConfig.Password = options.Password
+		container.Password = options.Password
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	tc.ClientMux.Lock()
-	redisC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	redisContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	tc.ClientMux.Unlock()
+	container.Container = redisContainer
+
 	if err != nil {
-		err = fmt.Errorf("Failed to start redis container: %v", err)
-		return
+		return container, fmt.Errorf("failed to start container: %v", err)
 	}
 
-	host, err := redisC.Host(ctx)
+	host, err := redisContainer.Host(ctx)
 	if err != nil {
-		err = fmt.Errorf("Failed to get redis container host: %v", err)
-		return
+		return container, fmt.Errorf("failed to get container host: %v", err)
 	}
+	container.Host = host
 
-	port, err := redisC.MappedPort(ctx, redisPort)
+	realPort, err := redisContainer.MappedPort(ctx, port)
 	if err != nil {
-		err = fmt.Errorf("Failed to get exposed redis container port: %v", err)
-		return
+		return container, fmt.Errorf("failed to get exposed container port: %v", err)
 	}
+	container.Port = int64(realPort.Int())
 
-	redisConfig.Host = host
-	redisConfig.Port = int64(port.Int())
-
-	if options.CollectLogs {
-		redisConfig.ContainerConfig.Log = new(tc.LogCollector)
-		go tc.EnableLogger(redisC, redisConfig.ContainerConfig.Log)
-	}
-	return
+	return container, nil
 }

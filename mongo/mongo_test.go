@@ -5,71 +5,84 @@ import (
 	"testing"
 	"time"
 
+	tc "github.com/romnn/testcontainers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// TestMongoContainer ...
-func TestMongoContainer(t *testing.T) {
+// TestMongo ...
+func TestMongo(t *testing.T) {
 	t.Parallel()
-	// Start mongo container
-	mongoC, mongoConn, err := StartMongoContainer(context.Background(), ContainerOptions{})
-	if err != nil {
-		t.Fatalf("Failed to start mongoDB container: %v", err)
-	}
-	defer mongoC.Terminate(context.Background())
 
-	// Connect to the database
-	mongoURI := mongoConn.ConnectionURI()
+	ctx := context.Background()
+	container, err := Start(ctx, Options{
+    ImageTag: "6.0.2",
+  })
+	if err != nil {
+		t.Fatalf("failed to start container: %v", err)
+	}
+	defer container.Terminate(ctx)
+
+	// start logger
+	logger, err := tc.StartLogger(ctx, container.Container)
+	if err != nil {
+		t.Errorf("failed to start logger: %v", err)
+	} else {
+		defer logger.Stop()
+		go logger.LogToStdout()
+	}
+
+	// connect to the database
+	mongoURI := container.ConnectionURI()
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		t.Fatalf("Failed to create mongo client (%s): %v", mongoURI, err)
+		t.Fatalf("failed to create client (%s): %v", mongoURI, err)
 	}
-	mctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	mctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	client.Connect(mctx)
 
 	err = client.Ping(mctx, readpref.Primary())
 	if err != nil {
-		t.Fatalf("Could not ping database within %d seconds (%s): %v", 20, mongoURI, err)
+		t.Fatalf("could not ping %s within %d seconds: %v", mongoURI, 20, err)
 	}
 	database := client.Database("testdatabase")
 	collection := database.Collection("my-collection")
 
-	// Insert mock data
+	// insert mock data
 	insertedCount := 40
-	if err := insertMockData(collection, insertedCount); err != nil {
-		t.Fatalf("Failed to insert documents into mongo database: %v", err)
+	if err := insertMockData(ctx, collection, insertedCount); err != nil {
+		t.Fatalf("failed to insert documents: %v", err)
 	}
 
-	// Find all
-	cur, err := collection.Find(context.Background(), bson.D{{}})
+	// find all
+	cur, err := collection.Find(ctx, bson.D{{}})
 	if err != nil {
-		t.Fatalf("Failed to query mongo database: %v", err)
+		t.Fatalf("failed to query: %v", err)
 	}
-	defer cur.Close(context.Background())
+	defer cur.Close(ctx)
 	var resultCount int
-	for cur.Next(context.Background()) {
+	for cur.Next(ctx) {
 		var result map[string]interface{}
 		err := cur.Decode(&result)
 		if err != nil {
-			t.Errorf("Failed to decode result: %v", err)
+			t.Errorf("failed to decode result: %v", err)
 		}
 		resultCount++
 	}
 
 	if resultCount != insertedCount {
-		t.Fatalf("Expected %d items in the database but got %d", resultCount, insertedCount)
+		t.Fatalf("expected %d documents but got %d", resultCount, insertedCount)
 	}
 }
 
-func insertMockData(collection *mongo.Collection, num int) error {
+func insertMockData(ctx context.Context, collection *mongo.Collection, num int) error {
 	var testdata []interface{}
 	for age := 0; age < num; age++ {
 		testdata = append(testdata, bson.D{{Key: "age", Value: age}})
 	}
-	_, err := collection.InsertMany(context.Background(), testdata)
+	_, err := collection.InsertMany(ctx, testdata)
 	return err
 }

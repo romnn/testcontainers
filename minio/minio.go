@@ -3,8 +3,6 @@ package minio
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"sync"
 	"time"
 
 	"github.com/docker/go-connections/nat"
@@ -13,37 +11,62 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// ContainerOptions ...
-type ContainerOptions struct {
+// Options ...
+type Options struct {
 	tc.ContainerOptions
-	AccessKeyID     string
-	SecretAccessKey string
+	ImageTag     string
+	RootUser     string
+	RootPassword string
 }
 
-// Config ...
-type Config struct {
+// Container ...
+type Container struct {
+	Container testcontainers.Container
 	tc.ContainerConfig
-	Host            string
-	Port            uint
-	AccessKeyID     string
-	SecretAccessKey string
+	Host         string
+	Port         uint
+	RootUser     string
+	RootPassword string
+}
+
+// Terminate ...
+func (c *Container) Terminate(ctx context.Context) {
+	if c.Container != nil {
+		c.Container.Terminate(ctx)
+	}
 }
 
 // ConnectionURI ...
-func (c Config) ConnectionURI() string {
+func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
-const defaultMinioPort = 9000
+// Start...
+func Start(ctx context.Context, options Options) (Container, error) {
+	var container Container
+	container.RootUser = options.RootUser
+	container.RootPassword = options.RootPassword
 
-// StartMinioContainer ...
-func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC testcontainers.Container, config Config, err error) {
-	minioPort, _ := nat.NewPort("", strconv.Itoa(defaultMinioPort))
+	// container.AccessKeyID = options.AccessKeyID
+	// container.SecretAccessKey = options.SecretAccessKey
+
+	port, err := nat.NewPort("", "9000")
+	if err != nil {
+		return container, fmt.Errorf("failed to build port: %v", err)
+	}
 
 	env := make(map[string]string)
-	if options.AccessKeyID != "" && options.SecretAccessKey != "" {
-		env["MINIO_ACCESS_KEY"] = options.AccessKeyID
-		env["MINIO_SECRET_KEY"] = options.SecretAccessKey
+	// if options.AccessKeyID != "" && options.SecretAccessKey != "" {
+	if options.RootUser != "" && options.RootPassword != "" {
+		// env["MINIO_ACCESS_KEY"] = options.AccessKeyID
+		// env["MINIO_SECRET_KEY"] = options.SecretAccessKey
+		env["MINIO_ROOT_USER"] = options.RootUser
+		env["MINIO_ROOT_PASSWORD"] = options.RootPassword
+	}
+
+	tag := "latest"
+	if options.ImageTag != "" {
+		tag = options.ImageTag
 	}
 
 	timeout := options.ContainerOptions.StartupTimeout
@@ -52,51 +75,35 @@ func StartMinioContainer(ctx context.Context, options ContainerOptions) (minioC 
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "minio/minio:RELEASE.2021-01-16T02-19-44Z",
+		Image:        fmt.Sprintf("minio/minio:%s", tag),
 		Env:          env,
 		Cmd:          []string{"server", "/data"},
-		ExposedPorts: []string{string(minioPort)},
-		WaitingFor:   wait.ForLog("Object API (Amazon S3 compatible)").WithStartupTimeout(timeout),
+		ExposedPorts: []string{string(port)},
+		WaitingFor:   wait.ForListeningPort(port).WithStartupTimeout(timeout),
 	}
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	tc.ClientMux.Lock()
-	minioC, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	minioContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
-	tc.ClientMux.Unlock()
 	if err != nil {
-		err = fmt.Errorf("Failed to start minio container: %v", err)
-		return
+		return container, fmt.Errorf("failed to start container: %v", err)
 	}
+	container.Container = minioContainer
 
-	host, err := minioC.Host(ctx)
+	host, err := minioContainer.Host(ctx)
 	if err != nil {
-		err = fmt.Errorf("Failed to get minio container host: %v", err)
-		return
+		return container, fmt.Errorf("failed to get container host: %v", err)
 	}
+	container.Host = host
 
-	port, err := minioC.MappedPort(ctx, minioPort)
+	realPort, err := minioContainer.MappedPort(ctx, port)
 	if err != nil {
-		err = fmt.Errorf("Failed to get exposed minio container port: %v", err)
-		return
+		return container, fmt.Errorf("failed to get exposed container port: %v", err)
 	}
+	container.Port = uint(realPort.Int())
 
-	config = Config{
-		Host:            host,
-		Port:            uint(port.Int()),
-		AccessKeyID:     options.AccessKeyID,
-		SecretAccessKey: options.SecretAccessKey,
-	}
-
-	if options.CollectLogs {
-		config.ContainerConfig.Log = &tc.LogCollector{
-			MessageChan: make(chan string),
-			Mux:         sync.Mutex{},
-		}
-		go tc.EnableLogger(minioC, config.ContainerConfig.Log)
-	}
-	return
+	return container, nil
 }

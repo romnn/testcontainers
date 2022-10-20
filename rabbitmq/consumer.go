@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"github.com/streadway/amqp"
 )
 
@@ -12,14 +13,14 @@ type ConsumerOptions struct {
 	QueueLength        int64
 }
 
-// SetupConsumer ...
-func SetupConsumer(options ConsumerOptions, ch *amqp.Channel) *amqp.Channel {
-	// Define the arguments to configure a queue
+// SetupQueue ...
+func (options *ConsumerOptions) SetupQueue(ch *amqp.Channel) error {
+	// define the arguments to configure a queue
 	args := make(amqp.Table)
-	// Set a maximum queue length
 	args["x-max-length"] = options.QueueLength
-	// Configure the Queue
-	q, err := ch.QueueDeclare(
+
+	// configure the queue
+	queue, err := ch.QueueDeclare(
 		options.QueueName, // name
 		true,              // durable
 		false,             // delete when unused
@@ -27,16 +28,21 @@ func SetupConsumer(options ConsumerOptions, ch *amqp.Channel) *amqp.Channel {
 		false,             // no-wait
 		args,              // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	if err != nil {
+		return fmt.Errorf("failed to declare queue: %v", err)
+	}
 
-	// Binding queue to specified exchange with routing key
+	// bind queue to specified exchange with routing key
 	err = ch.QueueBind(
-		q.Name,                     // queue name
+		queue.Name,                 // queue name
 		options.ExchangeRoutingKey, // routing key
 		options.ExchangeName,       // exchange
 		false,
-		nil)
-	failOnError(err, "Failed to bind a queue")
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to bind queue: %v", err)
+	}
 
-	return ch
+	return nil
 }
