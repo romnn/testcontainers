@@ -140,16 +140,14 @@ For more examples, see `examples/`.
 
 ### Development
 
-###### Prerequisites
-
-Before you get started, make sure you have installed the following tools::
+Before you get started, make sure you have installed the following tools:
 
     $ python3 -m pip install pre-commit bump2version invoke
-    $ go get -u golang.org/x/tools/cmd/goimports
-    $ go get -u golang.org/x/lint/golint
-    $ go get -u github.com/fzipp/gocyclo/cmd/gocyclo
+    $ go install golang.org/x/tools/cmd/goimports@latest
+    $ go install golang.org/x/lint/golint@latest
+    $ go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
-**Remember**: To be able to excecute the tools downloaded with `go get`,
+**Remember**: To be able to excecute the tools installed with `go install`,
 make sure to include `$GOPATH/bin` in your `$PATH`.
 If `echo $GOPATH` does not give you a path make sure to run
 (`export GOPATH="$HOME/go"` to set it). In order for your changes to persist,
@@ -165,11 +163,4 @@ You can check if all checks pass at any time:
 
 ```bash
 invoke pre-commit
-```
-
-Note for Maintainers: After merging changes, tag your commits with a new version and push to GitHub to create a release:
-
-```bash
-bump2version (major | minor | patch)
-git push --follow-tags
 ```
