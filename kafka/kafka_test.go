@@ -2,9 +2,9 @@ package kafka
 
 import (
 	"context"
+	"log"
 	"testing"
 	"time"
-	"log"
 
 	"github.com/Shopify/sarama"
 	"github.com/romnn/deepequal"

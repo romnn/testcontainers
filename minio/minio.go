@@ -41,14 +41,11 @@ func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
-// Start...
+// Start ...
 func Start(ctx context.Context, options Options) (Container, error) {
 	var container Container
 	container.RootUser = options.RootUser
 	container.RootPassword = options.RootPassword
-
-	// container.AccessKeyID = options.AccessKeyID
-	// container.SecretAccessKey = options.SecretAccessKey
 
 	port, err := nat.NewPort("", "9000")
 	if err != nil {
@@ -56,10 +53,7 @@ func Start(ctx context.Context, options Options) (Container, error) {
 	}
 
 	env := make(map[string]string)
-	// if options.AccessKeyID != "" && options.SecretAccessKey != "" {
 	if options.RootUser != "" && options.RootPassword != "" {
-		// env["MINIO_ACCESS_KEY"] = options.AccessKeyID
-		// env["MINIO_SECRET_KEY"] = options.SecretAccessKey
 		env["MINIO_ROOT_USER"] = options.RootUser
 		env["MINIO_ROOT_PASSWORD"] = options.RootPassword
 	}

@@ -1,15 +1,12 @@
 package kafka
 
 import (
-	// "bufio"
-	"context"
-	"text/template"
-	// "encoding/binary"
 	"bytes"
+	"context"
 	"fmt"
-	// "io"
 	"regexp"
 	"strings"
+	"text/template"
 
 	dockerclient "github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -27,54 +24,32 @@ type Options struct {
 }
 
 // Container ...
-type KafkaContainer struct {
+type Container struct {
 	tc.ContainerConfig
 	Container testcontainers.Container
-	// ZookeeperContainer *tczk.Container
-	// Network            testcontainers.Network
-	// tc.ContainerConfig
-	Host    string
-	Port    int
-	Brokers []string
-	Version string
+	Host      string
+	Port      int
+	Brokers   []string
+	Listeners []string
+	Version   string
 }
 
-// Container ...
-type Container struct {
-	Kafka *KafkaContainer
-	// KafkaContainer testcontainers.Container
-	// ZookeeperContainer testcontainers.Container
+// Composed ...
+type Composed struct {
+	Kafka     *Container
 	Zookeeper *tczk.Container
 	Network   testcontainers.Network
-	// tc.ContainerConfig
-	// Host         string
-	// Port         int
-	// Brokers      []string
-	// KafkaVersion string
 }
 
-// // ZooContainer ...
-// type Container struct {
-// 	Container          testcontainers.Container
-// 	ZookeeperContainer testcontainers.Container
-// 	// ZookeeperContainer tczk.Container
-// 	Network testcontainers.Network
-// 	tc.ContainerConfig
-// 	Host         string
-// 	Port         int
-// 	Brokers      []string
-// 	KafkaVersion string
-// }
-
 // Terminate ...
-func (c *KafkaContainer) Terminate(ctx context.Context) {
+func (c *Container) Terminate(ctx context.Context) {
 	if c.Container != nil {
 		c.Container.Terminate(ctx)
 	}
 }
 
 // Terminate ...
-func (c *Container) Terminate(ctx context.Context) {
+func (c *Composed) Terminate(ctx context.Context) {
 	if c.Kafka != nil {
 		c.Kafka.Terminate(ctx)
 	}
@@ -88,20 +63,81 @@ func (c *Container) Terminate(ctx context.Context) {
 	}
 }
 
-// // Options ...
-// type Options struct {
-// 	tc.ContainerOptions
-// 	LogLevel string
-// 	ImageTag string
-// }
+func (c *Composed) getKafkaVersion(ctx context.Context) error {
+	versionCmd := []string{"kafka-topics", "--version"}
+	versionOutput, err := tc.ExecCmd(ctx, c.Kafka.Container, versionCmd)
+	if err != nil {
+		return fmt.Errorf("failed to get kafka version: %v", err)
+	}
+	stdout := versionOutput.Stdout
+	re := regexp.MustCompile(`^([\d.]*)-`)
+	matches := re.FindStringSubmatch(stdout)
+	if len(matches) != 2 {
+		return fmt.Errorf(`failed to extract version from "%q"`, stdout)
+	}
+	c.Kafka.Version = matches[1]
+	return nil
+}
 
-// Start...
-// kafkaC , Config *ContainerConnectionConfig, zkC testcontainers.Container, zkConfig *tczk.Config, net testcontainers.Network, err error
-func Start(ctx context.Context, options Options) (Container, error) {
-	var container Container
+func (c *Composed) addStartScript(ctx context.Context, path string, options Options) error {
+	logTemplatePath := "/etc/confluent/docker/log4j.properties.template.new"
+	logTemplate := `
+log4j.rootLogger={{ env["KAFKA_LOG4J_ROOT_LOGLEVEL"] | default('INFO') }}, stdout
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+`
+	if err := c.Kafka.Container.CopyToContainer(ctx, []byte(logTemplate), logTemplatePath, 700); err != nil {
+		return fmt.Errorf("failed to copy file to %s: %v", logTemplatePath, err)
+	}
+
+	scriptTmpl := template.Must(template.New("script").Parse(`#!/bin/bash
+
+source /etc/confluent/docker/bash-config
+export KAFKA_LOG4J_ROOT_LOGLEVEL="{{.LogLevel}}"
+export KAFKA_ZOOKEEPER_CONNECT="{{.ZookeeperConnect}}"
+export KAFKA_ADVERTISED_LISTENERS="{{.AdvListeners}}"
+mv {{.LogTemplatePath}} /etc/confluent/docker/log4j.properties.template
+/etc/confluent/docker/configure
+/etc/confluent/docker/launch
+`))
+
+	logLevel := "WARN"
+	if options.LogLevel != "" {
+		logLevel = options.LogLevel
+	}
+
+	zkHost := c.Zookeeper.Host
+	zkPort := c.Zookeeper.Port
+	var script bytes.Buffer
+	err := scriptTmpl.Execute(&script, struct {
+		LogLevel         string
+		ZookeeperConnect string
+		AdvListeners     string
+		LogTemplatePath  string
+	}{
+		LogLevel:         logLevel,
+		ZookeeperConnect: fmt.Sprintf("%s:%d", zkHost, zkPort),
+		AdvListeners:     strings.Join(c.Kafka.Listeners, ","),
+		LogTemplatePath:  logTemplatePath,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to template start script: %v", err)
+	}
+
+	if err := c.Kafka.Container.CopyToContainer(ctx, script.Bytes(), path, 700); err != nil {
+		return fmt.Errorf("failed to copy file to %s: %v", path, err)
+	}
+	return nil
+}
+
+// Start ...
+func Start(ctx context.Context, options Options) (Composed, error) {
+	var composed Composed
 	port, err := nat.NewPort("", "9093")
 	if err != nil {
-		return container, fmt.Errorf("failed to build port: %v", err)
+		return composed, fmt.Errorf("failed to build port: %v", err)
 	}
 
 	startScriptPath := "/start.sh"
@@ -113,8 +149,6 @@ func Start(ctx context.Context, options Options) (Container, error) {
 	}
 
 	req := testcontainers.ContainerRequest{
-		// Image: "confluentinc/cp-kafka:5.5.3",
-		// Image: "confluentinc/cp-kafka:latest",
 		Image: fmt.Sprintf("confluentinc/cp-kafka:%s", tag),
 		Cmd:   []string{"/bin/bash", "-c", cmd},
 		Env: map[string]string{
@@ -134,7 +168,7 @@ func Start(ctx context.Context, options Options) (Container, error) {
 
 	tc.MergeRequest(&req, &options.ContainerOptions.ContainerRequest)
 
-	// Create a network
+	// create a network
 	if len(req.Networks) < 1 {
 		networkName := fmt.Sprintf("kafka-network-%s", tc.UniqueID())
 		net, err := tc.CreateNetwork(testcontainers.NetworkRequest{
@@ -144,10 +178,10 @@ func Start(ctx context.Context, options Options) (Container, error) {
 			CheckDuplicate: true,
 		}, 2)
 		if err != nil {
-			return container, fmt.Errorf("failed to create network: %v", err)
+			return composed, fmt.Errorf("failed to create network: %v", err)
 		}
 		req.Networks = []string{networkName}
-		container.Network = net
+		composed.Network = net
 	}
 
 	// start zookeeper first
@@ -166,206 +200,59 @@ func Start(ctx context.Context, options Options) (Container, error) {
 	}
 	zookeeperContainer, err := tczk.Start(ctx, zookeeperOptions)
 	if err != nil {
-		return container, fmt.Errorf("failed to start zookeeper container: %v", err)
+		return composed, fmt.Errorf("failed to start zookeeper container: %v", err)
 	}
-	container.Zookeeper = &zookeeperContainer
+	composed.Zookeeper = &zookeeperContainer
 
 	kafkaContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
 	if err != nil {
-		return container, fmt.Errorf("failed to start kafka container: %v", err)
+		return composed, fmt.Errorf("failed to start kafka container: %v", err)
 	}
-	container.Kafka = new(KafkaContainer)
-	container.Kafka.Container = kafkaContainer
+	composed.Kafka = new(Container)
+	composed.Kafka.Container = kafkaContainer
 
 	host, err := kafkaContainer.Host(ctx)
 	if err != nil {
-		return container, fmt.Errorf("failed to get kafka container host: %v", err)
+		return composed, fmt.Errorf("failed to get kafka container host: %v", err)
 	}
-	container.Kafka.Host = host
+	composed.Kafka.Host = host
 
 	realPort, err := kafkaContainer.MappedPort(ctx, port)
 	if err != nil {
-		return container, fmt.Errorf("failed to get exposed kafka container port: %v", err)
+		return composed, fmt.Errorf("failed to get exposed kafka container port: %v", err)
 	}
-	container.Kafka.Port = realPort.Int()
-	container.Kafka.Brokers = []string{fmt.Sprintf("%s:%d", host, realPort.Int())}
+	composed.Kafka.Port = realPort.Int()
+	composed.Kafka.Brokers = []string{fmt.Sprintf("%s:%d", host, realPort.Int())}
 
 	bootstrapServer := fmt.Sprintf("PLAINTEXT://%s:%d", host, realPort.Int())
-	listeners := []string{bootstrapServer}
+	composed.Kafka.Listeners = []string{bootstrapServer}
 
 	client, err := dockerclient.NewClientWithOpts(dockerclient.FromEnv, dockerclient.WithAPIVersionNegotiation())
 	if err != nil {
-		return container, fmt.Errorf("failed to get docker client: %v", err)
+		return composed, fmt.Errorf("failed to get docker client: %v", err)
 	}
 	id := kafkaContainer.GetContainerID()
 	inspect, err := client.ContainerInspect(context.Background(), id)
 	if err != nil {
-		return container, fmt.Errorf("failed to inspect container %s: %v", id, err)
+		return composed, fmt.Errorf("failed to inspect container %s: %v", id, err)
 	}
 	for _, endpoint := range inspect.NetworkSettings.Networks {
 		listener := fmt.Sprintf("BROKER://%s:9092", endpoint.IPAddress)
-		listeners = append(listeners, listener)
+		composed.Kafka.Listeners = append(composed.Kafka.Listeners, listener)
 	}
 
-	logTemplatePath := "/etc/confluent/docker/log4j.properties.template.new"
-	// logSettings := "log4j.logger.kafka=DEBUG,kafkaAppender"
-	// logSettings := "log4j.logger.kafka=WARN,kafkaAppender"
-
-	// log4j.rootLogger={{ env["KAFKA_LOG4J_ROOT_LOGLEVEL"] | default('INFO') }}, stdout
-	// {% set loggers = {
-	//   'kafka': 'INFO',
-	//   'kafka.network.RequestChannel$': 'WARN',
-	//   'kafka.producer.async.DefaultEventHandler': 'DEBUG',
-	//   'kafka.request.logger': 'WARN',
-	//   'kafka.controller': 'TRACE',
-	//   'kafka.log.LogCleaner': 'INFO',
-	//   'state.change.logger': 'TRACE',
-	//   'kafka.authorizer.logger': 'WARN'
-	//   } -%}
-	// log4j.rootLogger=WARN, stdout
-	// 'kafka': { env["KAFKA_LOG4J_ROOT_LOGLEVEL"] | default('INFO') },
-
-	logTemplate := `
-log4j.rootLogger={{ env["KAFKA_LOG4J_ROOT_LOGLEVEL"] | default('INFO') }}, stdout
-
-log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
-`
-
-	// {% set loggers = {
-	//   'kafka.network.RequestChannel$': 'WARN',
-	//   'kafka.producer.async.DefaultEventHandler': 'DEBUG',
-	//   'kafka.request.logger': 'WARN',
-	//   'kafka.controller': 'TRACE',
-	//   'kafka.log.LogCleaner': 'INFO',
-	//   'state.change.logger': 'TRACE',
-	//   'kafka.authorizer.logger': 'WARN'
-	//   } -%}
-
-	// {% if env['KAFKA_LOG4J_LOGGERS'] %}
-	// {% set loggers = parse_log4j_loggers(env['KAFKA_LOG4J_LOGGERS'], loggers) %}
-	// {% endif %}
-
-	// {% for logger,loglevel in loggers.items() %}
-	// log4j.logger.{{logger}}={{loglevel}}
-	// {% endfor %}
-	// `
-	err = kafkaContainer.CopyToContainer(ctx, []byte(logTemplate), logTemplatePath, 700)
+	err = composed.getKafkaVersion(ctx)
 	if err != nil {
-		return container, fmt.Errorf("failed to copy file to %s: %v", logTemplatePath, err)
+		return composed, err
 	}
 
-	versionCmd := []string{"kafka-topics", "--version"}
-	versionOutput, err := tc.ExecCmd(kafkaContainer, versionCmd, ctx)
+	err = composed.addStartScript(ctx, startScriptPath, options)
 	if err != nil {
-		return container, fmt.Errorf("failed to get kafka version: %v", err)
-	}
-	stdout := versionOutput.Stdout
-	re := regexp.MustCompile(`^([\d.]*)-`)
-	matches := re.FindStringSubmatch(stdout)
-	if len(matches) != 2 {
-		return container, fmt.Errorf(`failed to extract version from "%q"`, stdout)
-	}
-	container.Kafka.Version = matches[1]
-	// version := matches[1]
-	// log.Infof("kafka version: %s", version)
-
-	// logCmd := []string{"/bin/bash", "-c", fmt.Sprintf(`export VAL="%s" && echo "$VAL" > %s && chmod 700 %s`, logTemplate, logProperties, logProperties)}
-	// exitCode, reader, err := kafkaC.Exec(ctx, logCmd)
-	// if err != nil || exitCode != 0 {
-	// 	output, _ := ioutil.ReadAll(reader)
-	// 	err = fmt.Errorf(`running: %s
-	// in the kafka container failed:
-	// exit code: %d
-	// output: %s
-	// error: %v`, logCmd, exitCode, output, err)
-	// 	return
-	// }
-
-	// start script
-	// export LOG_TEMPLATE=\"%s\"
-	// echo "$LOG_TEMPLATE" > /etc/confluent/docker/log4j.properties.template
-	// script := fmt.Sprintf(`#!/bin/bash
-	scriptTmpl := template.Must(template.New("script").Parse(`#!/bin/bash
-
-source /etc/confluent/docker/bash-config
-export KAFKA_LOG4J_ROOT_LOGLEVEL="{{.LogLevel}}"
-export KAFKA_ZOOKEEPER_CONNECT="{{.ZookeeperConnect}}"
-export KAFKA_ADVERTISED_LISTENERS="{{.AdvListeners}}"
-mv {{.LogTemplatePath}} /etc/confluent/docker/log4j.properties.template
-/etc/confluent/docker/configure
-/etc/confluent/docker/launch
-`))
-
-	logLevel := "WARN"
-	if options.LogLevel != "" {
-		logLevel = options.LogLevel
+		return composed, err
 	}
 
-	var script bytes.Buffer
-	err = scriptTmpl.Execute(&script, struct {
-		LogLevel         string
-		ZookeeperConnect string
-		AdvListeners     string
-		LogTemplatePath  string
-	}{
-		LogLevel:         logLevel,
-		ZookeeperConnect: fmt.Sprintf("%s:%d", zookeeperContainer.Host, zookeeperContainer.Port),
-		AdvListeners:     strings.Join(listeners, ","),
-		LogTemplatePath:  logTemplatePath,
-	})
-	if err != nil {
-		return container, fmt.Errorf("failed to template start script: %v", err)
-	}
-
-	// script := fmt.Sprintf(`#!/bin/bash
-
-	// source /etc/confluent/docker/bash-config
-	// export KAFKA_LOG4J_ROOT_LOGLEVEL="%s"
-	// export KAFKA_ZOOKEEPER_CONNECT="%s"
-	// export KAFKA_ADVERTISED_LISTENERS="%s"
-	// mv %s /etc/confluent/docker/log4j.properties.template
-	// /etc/confluent/docker/configure
-	// /etc/confluent/docker/launch
-	// `, logLevel, zookeeperConnect, advListeners, logTemplatePath)
-
-	err = kafkaContainer.CopyToContainer(ctx, script.Bytes(), startScriptPath, 700)
-	if err != nil {
-		return container, fmt.Errorf("failed to copy file to %s: %v", startScriptPath, err)
-	}
-
-	// strings.Replace(logTemplate, `"`, `\"`, -1)
-	// script += fmt.Sprintf(`export KAFKA_ZOOKEEPER_CONNECT="%s:%d" && `, zkConfig.Host, zkConfig.Port)
-	// script += fmt.Sprintf(`export KAFKA_ADVERTISED_LISTENERS="%s" && `, strings.Join(listeners, ","))
-	// script += ". /etc/confluent/docker/bash-config && "
-	// script += "/etc/confluent/docker/configure && "
-	// script += "/etc/confluent/docker/launch"
-
-	// startCmd := []string{"/bin/bash", "-c", fmt.Sprintf(`echo -e "%s" > %s && chmod 700 %s`, script, startScript, startScript)}
-	// startCmd := []string{"/bin/bash", "-c", fmt.Sprintf(`echo -e "%s" > %s && chmod 700 %s`, script, startScript, startScript)}
-	// _, err = exec(kafkaC, []string{"/bin/bash", "-c", startScriptPath}, ctx)
-	// if err != nil {
-	// 	return
-	// }
-	// exitCode, reader, err := kafkaC.Exec(ctx, startCmd)
-	// if err != nil || exitCode != 0 {
-	// 	output, _ := ioutil.ReadAll(reader)
-	// 	err = fmt.Errorf(`running: %s
-	// in the kafka container failed:
-	// exit code: %d
-	// output: %v
-	// error: %v`, startCmd, exitCode, output, err)
-	// 	return
-	// }
-
-	// Config = &ContainerConnectionConfig{
-	// 	Brokers:      []string{fmt.Sprintf("%s:%d", host, realKafkaPort.Int())},
-	// 	KafkaVersion: version,
-	// }
-
-	return container, nil
+	return composed, nil
 }

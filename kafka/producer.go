@@ -1,14 +1,11 @@
 package kafka
 
 import (
-	// "context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/Shopify/sarama"
-	// "github.com/cenkalti/backoff/v4"
-	// log "github.com/sirupsen/logrus"
 )
 
 // ProducerOptions ...
@@ -45,22 +42,6 @@ func (p *Producer) Send(topic string, pkey string, entry sarama.Encoder) {
 	}
 }
 
-// func (p *Producer) forBroker(brokerList []string) (Producer, error) {
-// func newProducer(brokerList []string) (Producer, error) {
-// 	collector, err := newDataCollector(brokerList)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	producer, err := newAccessLogProducer(brokerList)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return Producer{
-// 		DataCollector:     collector,
-// 		AccessLogProducer: producer,
-// 	}, nil
-// }
-
 func newDataCollector(brokerList []string) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
 	// wait for all in-sync replicas to ack the message
@@ -91,10 +72,8 @@ func newAccessLogProducer(brokerList []string) (sarama.AsyncProducer, error) {
 	return producer, err
 }
 
-// StartProducer ...
+// NewProducer ...
 func (options *ProducerOptions) NewProducer() (*Producer, error) {
-	// func (options *ProducerOptions) NewProducer(ctx context.Context) (*Producer, error) {
-	// var producer Producer
 	collector, err := newDataCollector(options.Brokers)
 	if err != nil {
 		return nil, err
@@ -107,45 +86,4 @@ func (options *ProducerOptions) NewProducer() (*Producer, error) {
 		DataCollector:     collector,
 		AccessLogProducer: producer,
 	}, nil
-
-	// producer, err := newProducer(options.Brokers)
-	// return producer, err
-	// newProducer := func() error {
-	// 	var err error
-	// for {
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return nil, fmt.Errorf("Failed to start kafka producer after %d attempts", attempt)
-	// 	default:
-
-	// 	// group, err = sarama.NewConsumerGroup(options.Brokers, options.Group, config)
-	// 	return err
-	// }
-
-	// bo := backoff.NewExponentialBackOff()
-	// bo.Multiplier = 1.1
-	// bo.InitialInterval = 2 * time.Second
-	// bo.MaxElapsedTime = 2 * time.Minute
-	// err := backoff.Retry(newProducer, bo)
-	// return producer, err
-
-	// var attempt int
-	// for {
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return nil, fmt.Errorf("Failed to start kafka producer after %d attempts", attempt)
-	// 	default:
-	// 		producer, err := Producer{}.forBroker(options.Brokers)
-	// 		if err != nil {
-	// 			if attempt >= maxRetries {
-	// 				return nil, fmt.Errorf("Failed to start kafka producer: %v", err)
-	// 			}
-	// 			attempt++
-	// 			log.Infof("Failed to connect: %v. (Attempt %d of %d)", err, attempt, maxRetries)
-	// 			time.Sleep(time.Duration(retryIntervalSec) * time.Second)
-	// 		} else {
-	// 			return producer, nil
-	// 		}
-	// 	}
-	// }
 }

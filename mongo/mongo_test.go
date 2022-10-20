@@ -18,8 +18,8 @@ func TestMongo(t *testing.T) {
 
 	ctx := context.Background()
 	container, err := Start(ctx, Options{
-    ImageTag: "6.0.2",
-  })
+		ImageTag: "6.0.2",
+	})
 	if err != nil {
 		t.Fatalf("failed to start container: %v", err)
 	}

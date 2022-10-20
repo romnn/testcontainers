@@ -1,4 +1,4 @@
-## testcontainers
+## testcontainers, pre-configured 
 
 [![GitHub](https://img.shields.io/github/license/romnn/testcontainers)](https://github.com/romnn/testcontainers)
 [![GoDoc](https://godoc.org/github.com/romnn/testcontainers?status.svg)](https://godoc.org/github.com/romnn/testcontainers)

@@ -39,7 +39,7 @@ func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
-// Start...
+// Start ...
 func Start(ctx context.Context, options Options) (Container, error) {
 	var container Container
 	port, err := nat.NewPort("", "6379")

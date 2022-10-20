@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"fmt"
+
 	"github.com/streadway/amqp"
 )
 

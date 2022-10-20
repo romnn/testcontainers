@@ -24,7 +24,7 @@ def format(c):
 @task
 def test(c):
     """Run tests"""
-    c.run("env GO111MODULE=on go test -v -race ./...")
+    c.run("env GO111MODULE=on go test -race ./...")
 
 
 @task

@@ -7,6 +7,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
+// LogCollector ...
 type LogCollector struct {
 	LogChan   chan testcontainers.Log
 	container testcontainers.Container
@@ -42,9 +43,8 @@ func StartLogger(ctx context.Context, c testcontainers.Container) (LogCollector,
 		container: c,
 	}
 
+	// reversed to avoid "race" since `StartLogProducer` starts a goroutine
+	c.FollowOutput(&logger)
 	err := c.StartLogProducer(ctx)
-	if err == nil {
-		c.FollowOutput(&logger)
-	}
 	return logger, err
 }

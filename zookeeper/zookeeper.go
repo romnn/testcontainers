@@ -33,12 +33,12 @@ func (c *Container) Terminate(ctx context.Context) {
 	}
 }
 
-// ConnectionURI...
+// ConnectionURI ...
 func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
-// Start...
+// Start ...
 func Start(ctx context.Context, options Options) (Container, error) {
 	var container Container
 	port, err := nat.NewPort("", "2181")
@@ -68,7 +68,6 @@ func Start(ctx context.Context, options Options) (Container, error) {
 			"ALLOW_ANONYMOUS_LOGIN": "yes",
 			"ZOO_LOG_LEVEL":         logLevel,
 		},
-		// WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(timeout),
 		WaitingFor: wait.ForListeningPort(port).WithStartupTimeout(timeout),
 	}
 

@@ -46,7 +46,7 @@ func (c *Container) ConnectionURI() string {
 	return fmt.Sprintf("mongodb://%s%s/?connect=direct", databaseAuth, databaseHost)
 }
 
-// Start...
+// Start ...
 func Start(ctx context.Context, options Options) (Container, error) {
 	var container Container
 	container.User = options.User

@@ -11,11 +11,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 )
 
-const (
-	maxRetries       = 20
-	retryIntervalSec = 5
-)
-
 // ConsumerOptions ...
 type ConsumerOptions struct {
 	Brokers []string
@@ -86,7 +81,7 @@ func (options *ConsumerOptions) StartConsumer(ctx context.Context) (Consumer, *s
 	config := sarama.NewConfig()
 
 	consumer := Consumer{
-		readyChan:   make(chan error), // , 2),
+		readyChan:   make(chan error),
 		MessageChan: make(chan *sarama.ConsumerMessage),
 	}
 
@@ -114,23 +109,15 @@ func (options *ConsumerOptions) StartConsumer(ctx context.Context) (Consumer, *s
 			}
 			// check if context was cancelled, signaling that the consumer should stop
 			if ctx.Err() != nil {
+				log.Println("consumer loop exiting")
 				return
-				// log.Println("context canceled")
-				// consumer.readyChan <- err
-				// break
 			}
-			// consumer.readyChan = make(chan error, 2)
 			consumer.readyChan = make(chan error)
 		}
-		log.Println("consumer loop exiting")
 	}()
 
 	// Wait until the consumer has been set up
 	<-consumer.readyChan
-
-	// if err = <-consumer.readyChan; err != nil {
-	// 	return consumer, wg, fmt.Errorf("error setting up consumer: %v", err)
-	// }
 
 	log.Println("consumer started")
 	return consumer, wg, nil

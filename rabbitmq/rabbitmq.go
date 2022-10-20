@@ -32,7 +32,7 @@ func (c *Container) Terminate(ctx context.Context) {
 	}
 }
 
-// Start...
+// Start ...
 func Start(ctx context.Context, options Options) (Container, error) {
 	var container Container
 	port, err := nat.NewPort("", "5672")

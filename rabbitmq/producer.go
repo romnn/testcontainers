@@ -19,7 +19,7 @@ func (options *ProducerOptions) ConnectionURI() string {
 	return fmt.Sprintf("amqp://guest:guest@%s:%d", options.Host, options.Port)
 }
 
-// SetupConnnection ...
+// SetupConnection ...
 func (options *ProducerOptions) SetupConnection() (*amqp.Connection, *amqp.Channel, error) {
 	// connect
 	uri := options.ConnectionURI()
