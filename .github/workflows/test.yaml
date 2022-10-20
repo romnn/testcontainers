@@ -6,25 +6,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-python@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: 1.19.x
 
-      - name: install code check tools
+      - name: Install code check tools
         run: |
+          pip install pre-commit
           go get -u golang.org/x/lint/golint
           go get -u github.com/fzipp/gocyclo/cmd/gocyclo
           # do not change go.mod and go.sum
           git checkout go.mod go.sum
 
-      - name: code checks
-        uses: pre-commit/action@v2.0.0
-        with:
-          extra_args: --all-files
+      - name: Code checks
+        run: pre-commit run --all-files
 
   test:
     strategy:
+      fail-fast: false
       matrix:
         go-version:
           - 1.13.x
@@ -37,16 +37,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-python@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: build
+      - name: Build
         run: |
           go build ./...
 
-      - name: test
+      - name: Test
         run: |
           go test -v -coverprofile=coverage.txt -coverpkg=all -covermode=atomic ./...
           (bash <(curl -s https://codecov.io/bash))> /dev/null
