@@ -30,8 +30,7 @@ def embed(c):
 @task
 def test(c):
     """Run tests"""
-    # -coverpkg=all 
-    c.run("env GO111MODULE=on go test -race -coverprofile=coverage.txt -covermode=atomic ./...")
+    c.run("env GO111MODULE=on go test -race -coverpkg=all -coverprofile=coverage.txt -covermode=atomic ./...")
 
 
 @task

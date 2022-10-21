@@ -43,12 +43,14 @@ jobs:
 
       - name: Test
         run: >
-          go test -race
+          go test
+          -race
+          -coverpkg=all
           -coverprofile=coverage.txt
           -covermode=atomic
           ./...
 
       - uses: codecov/codecov-action@v3
+        if: ${{ matrix.go-version == '1.19.x' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-        if: ${{ matrix.go-version == '1.19.x' }}
