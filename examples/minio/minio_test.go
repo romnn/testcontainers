@@ -6,5 +6,5 @@ import (
 
 func TestMinioExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }

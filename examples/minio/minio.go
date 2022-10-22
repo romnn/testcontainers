@@ -10,7 +10,7 @@ import (
 	tcminio "github.com/romnn/testcontainers/minio"
 )
 
-func run() {
+func main() {
 	container, err := tcminio.Start(context.Background(), tcminio.Options{
 		// you could use latest here
 		ImageTag:     "RELEASE.2022-10-20T00-55-09Z",
@@ -49,8 +49,4 @@ func run() {
 		log.Fatalf("failed to create bucket %q: %v", bucket, err)
 	}
 	log.Printf("created bucket %q", bucket)
-}
-
-func main() {
-	run()
 }

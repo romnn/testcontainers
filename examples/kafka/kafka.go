@@ -10,7 +10,7 @@ import (
 	tckafka "github.com/romnn/testcontainers/kafka"
 )
 
-func run() {
+func main() {
 	ctx := context.Background()
 	container, err := tckafka.Start(ctx, tckafka.Options{
 		// you could use latest here
@@ -101,8 +101,4 @@ func run() {
 	wg.Wait()
 
 	log.Printf("received %v", received)
-}
-
-func main() {
-	run()
 }

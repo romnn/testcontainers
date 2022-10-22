@@ -9,7 +9,7 @@ import (
 	tcredis "github.com/romnn/testcontainers/redis"
 )
 
-func run() {
+func main() {
 	container, err := tcredis.Start(context.Background(), tcredis.Options{
 		ImageTag: "7.0.5", // you could use latest here
 	})
@@ -47,8 +47,4 @@ func run() {
 	}
 
 	log.Printf("received %q from redis", value)
-}
-
-func main() {
-	run()
 }

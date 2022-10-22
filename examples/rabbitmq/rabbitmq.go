@@ -10,7 +10,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func run() {
+func main() {
 	container, err := tcrabbitmq.Start(context.Background(), tcrabbitmq.Options{
 		ImageTag: "3.11.2", // you could use latest here
 	})
@@ -102,8 +102,4 @@ func run() {
 		}
 	}
 	log.Printf("received %v", received)
-}
-
-func main() {
-	run()
 }

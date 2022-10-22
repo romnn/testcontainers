@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func run() {
+func main() {
 	container, err := tcmongo.Start(context.Background(), tcmongo.Options{
 		ImageTag: "6.0.2", // you could use latest here
 	})
@@ -42,8 +42,4 @@ func run() {
 		log.Fatalf("failed to count docs in collection %q: %v", collection.Name(), err)
 	}
 	log.Printf("collection %q contains %d documents", collection.Name(), count)
-}
-
-func main() {
-	run()
 }

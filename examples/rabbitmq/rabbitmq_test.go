@@ -6,5 +6,5 @@ import (
 
 func TestRabbitmqExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }

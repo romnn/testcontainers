@@ -6,5 +6,5 @@ import (
 
 func TestMongoExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }

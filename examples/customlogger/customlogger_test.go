@@ -6,5 +6,5 @@ import (
 
 func TestCustomLoggerExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }

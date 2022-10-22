@@ -6,5 +6,5 @@ import (
 
 func TestRedisExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }

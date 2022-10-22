@@ -3,7 +3,6 @@
 [![GitHub](https://img.shields.io/github/license/romnn/testcontainers)](https://github.com/romnn/testcontainers)
 [![GoDoc](https://godoc.org/github.com/romnn/testcontainers?status.svg)](https://godoc.org/github.com/romnn/testcontainers)
 [![Test Coverage](https://codecov.io/gh/romnn/testcontainers/branch/master/graph/badge.svg)](https://codecov.io/gh/romnn/testcontainers)
-[![Release](https://img.shields.io/github/release/romnn/testcontainers)](https://github.com/romnn/testcontainers/releases/latest)
 
 A collection of pre-configured [testcontainers](https://github.com/testcontainers/testcontainers-go) for your golang integration tests.
 
@@ -33,7 +32,7 @@ import (
 	tcredis "github.com/romnn/testcontainers/redis"
 )
 
-func run() {
+func main() {
 	container, err := tcredis.Start(context.Background(), tcredis.Options{
 		ImageTag: "7.0.5", // you could use latest here
 	})
@@ -73,10 +72,6 @@ func run() {
 	log.Printf("received %q from redis", value)
 }
 
-func main() {
-	run()
-}
-
 ```
 
 ##### MongoDB
@@ -97,7 +92,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func run() {
+func main() {
 	container, err := tcmongo.Start(context.Background(), tcmongo.Options{
 		ImageTag: "6.0.2", // you could use latest here
 	})
@@ -128,10 +123,6 @@ func run() {
 		log.Fatalf("failed to count docs in collection %q: %v", collection.Name(), err)
 	}
 	log.Printf("collection %q contains %d documents", collection.Name(), count)
-}
-
-func main() {
-	run()
 }
 
 ```

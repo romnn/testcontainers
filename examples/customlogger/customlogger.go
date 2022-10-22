@@ -9,7 +9,7 @@ import (
 	tcredis "github.com/romnn/testcontainers/redis"
 )
 
-func run() {
+func main() {
 	container, err := tcredis.Start(context.Background(), tcredis.Options{
 		ImageTag: "7.0.5", // you could use latest here
 	})
@@ -36,8 +36,4 @@ func run() {
 
 	// collect logs for 4 seconds
 	time.Sleep(4 * time.Second)
-}
-
-func main() {
-	run()
 }

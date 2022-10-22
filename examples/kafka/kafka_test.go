@@ -6,5 +6,5 @@ import (
 
 func TestKafkaExample(t *testing.T) {
 	t.Parallel()
-	run()
+	main()
 }
