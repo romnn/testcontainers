@@ -1,17 +1,11 @@
-"""
-Tasks for maintaining this project.
-Run 'invoke --list' for guidance on using them
-"""
-import os
-
 from invoke import task
+from pathlib import Path
 
 PKG = "github.com/romnn/testcontainers"
 CMD_PKG = PKG
 
-
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-BUILD_DIR = os.path.join(ROOT_DIR, "build")
+ROOT_DIR = Path(__file__).parent
+BUILD_DIR = ROOT_DIR / "build"
 
 
 @task
@@ -24,13 +18,22 @@ def format(c):
 @task
 def embed(c):
     """Embed examples into README"""
-    c.run("npx embedme README.md")
+    c.run(f"npx embedme {ROOT_DIR / 'README.md'}")
 
 
 @task
 def test(c):
     """Run tests"""
-    c.run("env GO111MODULE=on go test -race -coverpkg=all -coverprofile=coverage.txt -covermode=atomic ./...")
+    cmd = [
+        "go",
+        "test",
+        "-race",
+        "-coverpkg=all",
+        "-coverprofile=coverage.txt",
+        "-covermode=atomic",
+        "./...",
+    ]
+    c.run(" ".join(cmd))
 
 
 @task
@@ -56,13 +59,6 @@ def install_hooks(c):
 def pre_commit(c):
     """Run all pre-commit checks"""
     c.run("pre-commit run --all-files")
-
-
-@task
-def coverage(c):
-    """Create coverage report"""
-    cov_options = "-coverprofile=coverage.txt -coverpkg=all -covermode=atomic"
-    c.run(f"env GO111MODULE=on go test -v -race {cov_options} ./...")
 
 
 @task
