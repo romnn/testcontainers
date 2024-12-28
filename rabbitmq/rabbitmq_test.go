@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/romnn/deepequal"
 	tc "github.com/romnn/testcontainers"
-	"github.com/streadway/amqp"
 )
 
 // TestRabbitmq...

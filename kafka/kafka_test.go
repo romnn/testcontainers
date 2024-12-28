@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/romnn/deepequal"
 	tc "github.com/romnn/testcontainers"
 )

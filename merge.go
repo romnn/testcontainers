@@ -1,7 +1,7 @@
 package testcontainers
 
 import (
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	"github.com/testcontainers/testcontainers-go"
 )
 

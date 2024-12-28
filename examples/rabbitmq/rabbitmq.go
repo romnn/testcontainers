@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	tc "github.com/romnn/testcontainers"
 	tcrabbitmq "github.com/romnn/testcontainers/rabbitmq"
-	"github.com/streadway/amqp"
 )
 
 func main() {

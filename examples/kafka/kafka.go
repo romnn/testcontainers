@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	tc "github.com/romnn/testcontainers"
 	tckafka "github.com/romnn/testcontainers/kafka"
 )

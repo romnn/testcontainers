@@ -128,30 +128,3 @@ func main() {
 ```
 
 For more examples, see `examples/`.
-
-### Development
-
-Before you get started, make sure you have installed the following tools:
-
-    $ python3 -m pip install pre-commit bump2version invoke
-    $ go install golang.org/x/tools/cmd/goimports@latest
-    $ go install golang.org/x/lint/golint@latest
-    $ go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-
-**Remember**: To be able to excecute the tools installed with `go install`,
-make sure to include `$GOPATH/bin` in your `$PATH`.
-If `echo $GOPATH` does not give you a path make sure to run
-(`export GOPATH="$HOME/go"` to set it). In order for your changes to persist,
-do not forget to add these to your shells `.bashrc`.
-
-With the tools in place, it is strongly advised to install the git commit hooks to make sure checks are passing in CI:
-
-```bash
-invoke install-hooks
-```
-
-You can check if all checks pass at any time:
-
-```bash
-invoke pre-commit
-```
